@@ -99,7 +99,8 @@ sub end_element {
 	if ( $data->{Name} eq "pre" and defined($self->{formatCmd}) ) {
 
 		my $input = $self->{formatData};
-		$input =~ s/^ *\n//; # chop first new line
+		$input =~ s/^[\s\n\r]*//; # chop first new lines
+		$input =~ s/[\s\n\r]*$//; # chop last empty lines
 		my $output = externalize( $self->{formatCmd}, $input );
 
 		$self->outputRawXML($output);

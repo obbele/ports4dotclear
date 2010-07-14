@@ -74,6 +74,10 @@ sub start_element {
 	{
 		$data->{Attributes}->{"{}href"}->{"Value"} =~ s{^$SRC}{$DEST}; 
 	}
+	if ( defined($data->{Attributes}->{"{}data"}) )
+	{
+		$data->{Attributes}->{"{}data"}->{"Value"} =~ s{^$SRC}{$DEST}; 
+	}
 
 	# print opening tag <name>
 	$self->SUPER::start_element($data);
