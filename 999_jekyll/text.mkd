@@ -1,0 +1,180 @@
+<!-- vim:spell:spelllang=en:
+Jekyll-like blog management for DotClear2
+=========================================
+-->
+
+I've always preferred tinkering on the command line and using *real
+editors* like VIM instead of relying on click & point software. Both
+approaches to computers are useful, but when it comes to tasks which
+take more than 20 minutes of my time or which are repeated again and
+again, good old scripts and command line offer a significant boost. At
+least, it is what I believe, even if sometimes I lost whole days trying
+to "speed things up" with a I-wish-it-was-smart-but-it-isn't script.
+
+So, in order not to make any exceptions for DotClear2, I've tried to
+build up a simple "publishing" system. It is loosely based on the same
+idea of static blog generators like [jekyll][0] and I've aimed for a few
+goals: 
+
+- integration with VIM
+- possibility to rely on DSCM like Git to backup my entries
+- extensible (as in the Unix philosophy where you combine a myriad of
+  small programs to achieve your task)
+
+<!-- :::::::::: EXCERPT SEPARATOR :::::::::: -->
+
+Quick demo
+==========
+
+Computer science is the art of accelerating the flow of data. This
+system doesn't escape this rule. Using it for posting a new entry on a
+DotClear2 blog is as simple as doing:
+
+	bash$Godberg/> make new
+	read -p "Enter directory name: " && {\
+					DIR="999_$REPLY";\
+					mkdir $DIR;\
+					cp Template/publish.log $DIR/publish.log;\
+					cp Template/text.mkd $DIR/text.mkd;\
+					ln Template/Makefile $DIR/Makefile;\
+					mkdir $DIR/Media;\
+					echo "New directory created: [$DIR]";\
+			}
+	Enter directory name: foobar
+	New directory created: [999_foobar]
+
+	bash$Godberg/> cd 999_foobar
+
+	bash$Godberg/999_foobar> vim text.mkd
+
+	bash$Godberg/999_foobar> make view
+
+	bash$Godberg/999_foobar> make CONFIG=ovh publish
+
+1. `make new` clone a template message and create our working directory
+*999_foobar*, where *foobar* is my message codename.
+
+2. with `vim text.mkd`, I edit a [MarkDown][1] file. Markdown is a
+simple language designed to help writing HTML content.
+
+3. `make view` displays a local preview of my message in my preferred web
+browser
+
+4. `make CONFIG=ovh publish` uploads my HTML blog entry and the related
+media files (included pictures or videos files) to a remote DotClear2
+blog where XML-RPC has been enabled. `CONFIG=XXX` indicates which
+XML-RPC configuration files I am using. This way, I can test my message
+on a dummy test server (`make CONFIG=dummyServer publish`) before
+uploading it to my real blog.
+
+Note that all my system is based on pure text files. Therefore, I can
+easily use software like [git][2] to version all my working directories
+and their contents.
+
+Godberg explained
+=================
+
+Root directory
+--------------
+
+The system is organised by a hierarchy of folders. At the top, we've got
+something like this:
+
+	bash$~> cd Godberg
+	bash$Godberg/> ls
+	10_deepBlue 11_mails 12_SVGs
+	999_jekyll 999_mysql 999_NetPHC
+	Makefile Scripts Template
+
+There is one fodler for each blog entry (`deepBlue`, `mails`, `SVGs`,
+`jekyll`, ...). The numbers are used to sort directories by
+chronological orders. Those beginning with *999* are new blog entries
+which have not yet been published.
+
+The *Scripts* directory contains various shell scripts used later for
+processing text. The *Template* directory holds a prototype of a new
+message which can be used to post new blog entries.
+
+Finally, the *Makefile* file can recurse over child folders and be used
+to control the whole system:
+
+	bash$Godberg/> make help
+	Usage:
+		make [all]: only format documents
+		make new: create a new directory based on Template/
+		make clean: remove all generated files
+		make view: format documents and open with web browser
+		make help: display this help
+
+From this root directory, you can type `make view` to display a preview
+of all existing messages in your favorite web browser, `make clean` to
+strip down your folders and `make new` to write a new message.
+
+Invoking `make new` clones the *Template* directory:
+
+	bash$Godberg/> make new
+	read -p "Enter directory name: " && {\
+					DIR="999_$REPLY";\
+					mkdir $DIR;\
+					cp Template/publish.log $DIR/publish.log;\
+					cp Template/text.mkd $DIR/text.mkd;\
+					ln Template/Makefile $DIR/Makefile;\
+					mkdir $DIR/Media;\
+					echo "New directory created: [$DIR]";\
+			}
+	Enter directory name: foobar
+	New directory created: [999_foobar]
+
+	bash$Godberg/> cd 999_foobar
+
+	bash$Godberg/999_foobar> ls
+	Makefile  Media  publish.log  text.mkd
+
+
+Message directory
+-----------------
+
+
+
+Each message directory contains a *Makefile* to manage our blog entry, a
+*Media* directory where to-be-included-in-our-HTML-content pictures and
+videos files are stored, a *publish.log* file keeping track of where the
+blog entry was uploaded and a *text.mkd* file which is where we will
+write our message. The raw content of *text.mkd* looks like this:
+
+<pre format="highlight -Xfls zellner -S HTML -c highlight.css" >
+<![CDATA[
+<!--
+Introduction/Title
+==================
+-->
+
+<!-- :::::::::: EXCERPT SEPARATOR :::::::::: -->
+
+Content
+=======
+]]>
+</pre>
+
+Blabla
+
+	bash$Godberg/999_foobar> make help
+	Usage:
+			make [all]: only format document
+			make view: format document and open with web browser
+			make clean: remove all generated files
+			make [CONFIG=foobar] publish: publish .xhtml document to a DotClear blog
+			make debug: wrap HTML with headers and output the result in debug.xhtml
+			make help: display this help
+	
+Tip
+---
+
+To get syntax highlighting in VIM working when editing Markdown files,
+set the filetype variable to `markdown.html`. See [this vim addon][3] to
+enable VIM snippets and syntax for markdown files.
+
+[0]: http://jekyll.com
+[1]: http://markdown.com
+[2]: http://git.com
+[3]: http://vim-addon.com

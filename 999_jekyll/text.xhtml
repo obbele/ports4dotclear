@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml' lang='en' xml:lang='en'>
+<head>
+    <link rel="stylesheet" type="text/css" href="highlight.css" />
+    <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+    <title>XML-RPC post preview</title>
+    <style type='text/css'>
+        body {
+            width : 57em;
+            margin : 1em auto;
+            color : #111;
+            background : #eee;
+        }
+        pre {
+            margin : 0 8em;
+            padding : 0.5em 2em;
+            background : #ddd;
+        }
+    </style>
+</head>
+<body>
+<!-- vim:spell:spelllang=en:
+Jekyll-like blog management for DotClear2
+=========================================
+-->
+
+<p>I&apos;ve always preferred tinkering on the command line and using <em>real
+editors</em> like VIM instead of relying on click &amp; point software. Both
+approaches to computers are useful, but when it comes to tasks which
+take more than 20 minutes of my time or which are repeated again and
+again, good old scripts and command line offer a significant boost. At
+least, it is what I believe, even if sometimes I lost whole days trying
+to &quot;speed things up&quot; with a I-wish-it-was-smart-but-it-isn&apos;t script.</p>
+
+<p>So, in order not to make any exceptions for DotClear2, I&apos;ve tried to
+build up a simple &quot;publishing&quot; system. It is loosely based on the same
+idea of static blog generators like <a href='http://jekyll.com'>jekyll</a> and I&apos;ve aimed for a few
+goals: </p>
+
+<ul>
+<li>integration with VIM</li>
+<li>possibility to rely on DSCM like Git to backup my entries</li>
+<li>extensible (as in the Unix philosophy where you combine a myriad of
+small programs to achieve your task)</li>
+</ul>
+
+<!-- :::::::::: EXCERPT SEPARATOR :::::::::: -->
+
+<h3>I. Quick demo</h3>
+
+<p>Computer science is the art of accelerating the flow of data. This
+system doesn&apos;t escape this rule. Using it for posting a new entry on a
+DotClear2 blog is as simple as doing:</p>
+
+<pre><code>bash$Godberg/&gt; make new
+read -p &quot;Enter directory name: &quot; &amp;&amp; {\
+                DIR=&quot;999_$REPLY&quot;;\
+                mkdir $DIR;\
+                cp Template/publish.log $DIR/publish.log;\
+                cp Template/text.mkd $DIR/text.mkd;\
+                ln Template/Makefile $DIR/Makefile;\
+                mkdir $DIR/Media;\
+                echo &quot;New directory created: [$DIR]&quot;;\
+        }
+Enter directory name: foobar
+New directory created: [999_foobar]
+
+bash$Godberg/&gt; cd 999_foobar
+
+bash$Godberg/999_foobar&gt; vim text.mkd
+
+bash$Godberg/999_foobar&gt; make view
+
+bash$Godberg/999_foobar&gt; make CONFIG=ovh publish
+</code></pre>
+
+<ol>
+<li><p><code>make new</code> clone a template message and create our working directory
+<em>999_foobar</em>, where <em>foobar</em> is my message codename.</p></li>
+<li><p>with <code>vim text.mkd</code>, I edit a <a href='http://markdown.com'>MarkDown</a> file. Markdown is a
+simple language designed to help writing HTML content.</p></li>
+<li><p><code>make view</code> displays a local preview of my message in my preferred web
+browser</p></li>
+<li><p><code>make CONFIG=ovh publish</code> uploads my HTML blog entry and the related
+media files (included pictures or videos files) to a remote DotClear2
+blog where XML-RPC has been enabled. <code>CONFIG=XXX</code> indicates which
+XML-RPC configuration files I am using. This way, I can test my message
+on a dummy test server (<code>make CONFIG=dummyServer publish</code>) before
+uploading it to my real blog.</p></li>
+</ol>
+
+<p>Note that all my system is based on pure text files. Therefore, I can
+easily use software like <a href='http://git.com'>git</a> to version all my working directories
+and their contents.</p>
+
+<h3>II. Godberg explained</h3>
+
+<h4>II.a. Root directory</h4>
+
+<p>The system is organised by a hierarchy of folders. At the top, we&apos;ve got
+something like this:</p>
+
+<pre><code>bash$~&gt; cd Godberg
+bash$Godberg/&gt; ls
+10_deepBlue 11_mails 12_SVGs
+999_jekyll 999_mysql 999_NetPHC
+Makefile Scripts Template
+</code></pre>
+
+<p>There is one fodler for each blog entry (<code>deepBlue</code>, <code>mails</code>, <code>SVGs</code>,
+<code>jekyll</code>, ...). The numbers are used to sort directories by
+chronological orders. Those beginning with <em>999</em> are new blog entries
+which have not yet been published.</p>
+
+<p>The <em>Scripts</em> directory contains various shell scripts used later for
+processing text. The <em>Template</em> directory holds a prototype of a new
+message which can be used to post new blog entries.</p>
+
+<p>Finally, the <em>Makefile</em> file can recurse over child folders and be used
+to control the whole system:</p>
+
+<pre><code>bash$Godberg/&gt; make help
+Usage:
+    make [all]: only format documents
+    make new: create a new directory based on Template/
+    make clean: remove all generated files
+    make view: format documents and open with web browser
+    make help: display this help
+</code></pre>
+
+<p>From this root directory, you can type <code>make view</code> to display a preview
+of all existing messages in your favorite web browser, <code>make clean</code> to
+strip down your folders and <code>make new</code> to write a new message.</p>
+
+<p>Invoking <code>make new</code> clones the <em>Template</em> directory:</p>
+
+<pre><code>bash$Godberg/&gt; make new
+read -p &quot;Enter directory name: &quot; &amp;&amp; {\
+                DIR=&quot;999_$REPLY&quot;;\
+                mkdir $DIR;\
+                cp Template/publish.log $DIR/publish.log;\
+                cp Template/text.mkd $DIR/text.mkd;\
+                ln Template/Makefile $DIR/Makefile;\
+                mkdir $DIR/Media;\
+                echo &quot;New directory created: [$DIR]&quot;;\
+        }
+Enter directory name: foobar
+New directory created: [999_foobar]
+
+bash$Godberg/&gt; cd 999_foobar
+
+bash$Godberg/999_foobar&gt; ls
+Makefile  Media  publish.log  text.mkd
+</code></pre>
+
+<h4>II.b. Message directory</h4>
+
+<p>Each message directory contains a <em>Makefile</em> to manage our blog entry, a
+<em>Media</em> directory where to-be-included-in-our-HTML-content pictures and
+videos files are stored, a <em>publish.log</em> file keeping track of where the
+blog entry was uploaded and a <em>text.mkd</em> file which is where we will
+write our message. The raw content of <em>text.mkd</em> looks like this:</p>
+
+<pre><![CDATA[]]><span class="hl line">    1 </span><span class="hl com">&lt;!--</span>
+<span class="hl line">    2 </span><span class="hl com">Introduction/Title</span>
+<span class="hl line">    3 </span><span class="hl com">==================</span>
+<span class="hl line">    4 </span><span class="hl com">--&gt;</span>
+<span class="hl line">    5 </span>
+<span class="hl line">    6 </span><span class="hl com">&lt;!-- :::::::::: EXCERPT SEPARATOR :::::::::: --&gt;</span>
+<span class="hl line">    7 </span>
+<span class="hl line">    8 </span>Content
+<span class="hl line">    9 </span>=======
+</pre>
+
+<p>Blabla</p>
+
+<pre><code>bash$Godberg/999_foobar&gt; make help
+Usage:
+        make [all]: only format document
+        make view: format document and open with web browser
+        make clean: remove all generated files
+        make [CONFIG=foobar] publish: publish .xhtml document to a DotClear blog
+        make debug: wrap HTML with headers and output the result in debug.xhtml
+        make help: display this help
+</code></pre>
+
+<h4>II.b. Tip</h4>
+
+<p>To get syntax highlighting in VIM working when editing Markdown files,
+set the filetype variable to <code>markdown.html</code>. See <a href='http://vim-addon.com'>this vim addon</a> to
+enable VIM snippets and syntax for markdown files.</p>
+
+</body>
+</html>
