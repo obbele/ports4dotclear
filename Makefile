@@ -17,7 +17,6 @@ help:
 	@echo "	make help: display this help"
 
 new:
-	#Scripts/create_entry.pl
 	read -p "Enter directory name: " && {\
 		DIR="999_$$REPLY";\
 		mkdir $$DIR;\
