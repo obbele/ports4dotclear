@@ -119,6 +119,29 @@ sub upload_content_and_rewrite_urls($$)
 	return $publish;
 }
 
+# Replace previous date by present one
+sub update_publish_date($$)
+{
+	my ($config, $id) = @_;
+
+	# Copy publish file to a temporary location for processing
+	my $temp = tmpnam();
+	copy $LOG, $temp;
+
+	open(my $input, "<$temp");
+	open(my $output, ">$LOG");
+	while(<$input>) {
+		if (/^$config/) {
+			print $output "$config\t$id\t".`date +%Y-%m-%d`."\n";
+		} else {
+			print $output $_;
+		}
+	}
+	close $input;
+	close $output;
+	unlink $temp;
+}
+
 ### Main
 my $XHTML = shift or usage();
 my $CONFIG = shift;
@@ -133,6 +156,8 @@ if (defined($ID)) {
 	my @cmd = ($XMLRPC, "--conf=$CONFIG", "--edit=$ID", "--raw=$rewrited");
 	system(@cmd) == 0 or die("system @cmd failed: $!");
 
+	update_publish_date($CONFIG, $ID);
+
 } else {
 	print "Posting new message on [$CONFIG]\n";
 
@@ -141,7 +166,7 @@ if (defined($ID)) {
 
 	my $last_id = get_last_id($CONFIG);
 	open(my $fh, ">>$LOG") or die $!;
-	print $fh, "$CONFIG\t$last_id\t`date +%Y-%m-%d`\n";
+	print $fh "$CONFIG\t$last_id\t".`date +%Y-%m-%d`."\n";
 	close($fh);
 }
 
