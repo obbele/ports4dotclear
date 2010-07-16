@@ -1,4 +1,5 @@
 Requirement:
+	(perl-Text-Markdown)
 	perl-SAX
 	perl-SAX-Writer
 	python3
