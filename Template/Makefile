@@ -5,6 +5,9 @@ DEBUG=debug.xhtml
 
 all: $(XHTML)
 
+edit:
+	$(EDITOR) $(DOC)
+
 view: $(XHTML)
 	xdg-open $^
 
@@ -32,6 +35,7 @@ help:
 		    "document to a DotClear blog"
 	@echo "	make debug: wrap HTML with headers and"\
 		    "output the result in $(DEBUG)"
+	@echo "	make edit: guess wha ?"
 	@echo "	make help: display this help"
 
 clean:

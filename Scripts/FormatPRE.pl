@@ -31,6 +31,7 @@ my $text;
 	$text = encode_utf8($text);
 
 	# Insert DOCTYPE declaration, since XML::SAX::* refuse to handle it
+	print '<?xml version="1.0" encoding="UTF-8"?>'."\n";
 	print '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"'."\n";
 	print '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'."\n";
 
