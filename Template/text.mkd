@@ -1,6 +1,9 @@
-<!--
-Introduction/Title
-==================
+<!-- vim:spell:spelllang=en:
+Note that the article title is missing.
+It is managed directly by DotClear2.
+- - - - - - - - - - - - - - - - -
+Insert below a short introduction
+=================================
 -->
 
 <!-- :::::::::: EXCERPT SEPARATOR :::::::::: -->

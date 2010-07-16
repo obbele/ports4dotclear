@@ -10,10 +10,10 @@ all view clean:
 
 help:
 	@echo "Usage:"
-	@echo "	make [all]: only format documents"
+	@echo "	make [all]: format all documents"
 	@echo "	make new: create a new directory based on Template/"
 	@echo "	make clean: remove all generated files"
-	@echo "	make view: format documents and open with web browser"
+	@echo "	make view: open all documents within a web browser"
 	@echo "	make help: display this help"
 
 new:
