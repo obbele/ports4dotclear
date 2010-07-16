@@ -13,66 +13,59 @@ to "speed things up" with a I-wish-it-was-smart-but-it-isn't script.
 
 So, in order not to make any exceptions for DotClear2, I've tried to
 build up a simple "publishing" system. It is loosely based on the same
-idea of static blog generators like [jekyll][0] and I've aimed for a few
-goals: 
+idea behing static blog generators like [jekyll][0] and I've aimed for a
+few goals: 
 
 - integration with VIM
-- possibility to rely on DSCM like Git to backup my entries
+- possibility to rely on DSCM like Git to backup my documents
 - extensible (as in the Unix philosophy where you combine a myriad of
   small programs to achieve your task)
 
-<!-- :::::::::: EXCERPT SEPARATOR :::::::::: -->
+<!-- :::::::::::::::::::::: EXCERPT SEPARATOR :::::::::::::::::::::: -->
 
 Quick demo
 ==========
 
-Computer science is the art of accelerating the flow of data. This
-system doesn't escape this rule. Using it for posting a new entry on a
+Computer science is all about accelerating the flow of data. This system
+doesn't escape this rule. Using it for posting a new entry on a
 DotClear2 blog is as simple as doing:
 
-	bash$Godberg/> make new
-	read -p "Enter directory name: " && {\
-					DIR="999_$REPLY";\
-					mkdir $DIR;\
-					cp Template/publish.log $DIR/publish.log;\
-					cp Template/text.mkd $DIR/text.mkd;\
-					ln Template/Makefile $DIR/Makefile;\
-					mkdir $DIR/Media;\
-					echo "New directory created: [$DIR]";\
-			}
+	bash$Goldberg/> make new
 	Enter directory name: foobar
 	New directory created: [999_foobar]
 
-	bash$Godberg/> cd 999_foobar
+	bash$Goldberg/> cd 999_foobar
 
-	bash$Godberg/999_foobar> vim text.mkd
+	bash$Goldberg/999_foobar> make edit
 
-	bash$Godberg/999_foobar> make view
+	bash$Goldberg/999_foobar> make view
 
-	bash$Godberg/999_foobar> make CONFIG=ovh publish
+	bash$Goldberg/999_foobar> make CONFIG=ovh publish
 
 1. `make new` clone a template message and create our working directory
-*999_foobar*, where *foobar* is my message codename.
+*999\_foobar*, where *foobar* is my message codename.
 
-2. with `vim text.mkd`, I edit a [MarkDown][1] file. Markdown is a
-simple language designed to help writing HTML content.
+2. `make edit`, launch `$EDITOR` to edit a [MarkDown][1] file. Markdown
+is a simple language designed to help writing HTML content. You can see
+what it looks like by getting the [source text][4] of this current blog
+entry.
 
 3. `make view` displays a local preview of my message in my preferred web
 browser
 
 4. `make CONFIG=ovh publish` uploads my HTML blog entry and the related
-media files (included pictures or videos files) to a remote DotClear2
-blog where XML-RPC has been enabled. `CONFIG=XXX` indicates which
-XML-RPC configuration files I am using. This way, I can test my message
-on a dummy test server (`make CONFIG=dummyServer publish`) before
-uploading it to my real blog.
+media files (pictures or videos files which are referenced by my HTML
+text) to a remote DotClear2 blog with XML-RPC enabled. `CONFIG=XXX`
+indicates which XML-RPC configuration files I am using. This way, I can
+test my message on a dummy test server (`make CONFIG=dummyServer
+publish`) before publishing it to my real blog.
 
 Note that all my system is based on pure text files. Therefore, I can
 easily use software like [git][2] to version all my working directories
 and their contents.
 
-Godberg explained
-=================
+Goldberg explained
+==================
 
 Root directory
 --------------
@@ -80,73 +73,62 @@ Root directory
 The system is organised by a hierarchy of folders. At the top, we've got
 something like this:
 
-	bash$~> cd Godberg
-	bash$Godberg/> ls
-	10_deepBlue 11_mails 12_SVGs
-	999_jekyll 999_mysql 999_NetPHC
-	Makefile Scripts Template
+	bash$~> cd Goldberg
+	bash$Goldberg/> ls
+	10_deepBlue/ 11_mails/ 12_SVGs/
+	999_foobar/ 999_jekyll/ 999_mysql/
+	Makefile Scripts/ Template/
 
-There is one fodler for each blog entry (`deepBlue`, `mails`, `SVGs`,
+There is one folder for each blog entry (`deepBlue`, `mails`, `SVGs`,
 `jekyll`, ...). The numbers are used to sort directories by
-chronological orders. Those beginning with *999* are new blog entries
-which have not yet been published.
+chronological orders. Those beginning with *999* are, by convention, new
+blog entries which have not yet been published.
 
-The *Scripts* directory contains various shell scripts used later for
-processing text. The *Template* directory holds a prototype of a new
-message which can be used to post new blog entries.
+The *Scripts/* directory contains various shell scripts used for
+processing text. The *Template/* directory holds the prototype folder of
+every new message.
 
 Finally, the *Makefile* file can recurse over child folders and be used
 to control the whole system:
 
-	bash$Godberg/> make help
+	bash$Goldberg/> make help
 	Usage:
-		make [all]: only format documents
+		make [all]: format all documents
 		make new: create a new directory based on Template/
 		make clean: remove all generated files
-		make view: format documents and open with web browser
+		make view: open all documents within a web browser
 		make help: display this help
 
-From this root directory, you can type `make view` to display a preview
-of all existing messages in your favorite web browser, `make clean` to
-strip down your folders and `make new` to write a new message.
+From this root directory, invoking `make new` clones the *Template*
+directory:
 
-Invoking `make new` clones the *Template* directory:
-
-	bash$Godberg/> make new
-	read -p "Enter directory name: " && {\
-					DIR="999_$REPLY";\
-					mkdir $DIR;\
-					cp Template/publish.log $DIR/publish.log;\
-					cp Template/text.mkd $DIR/text.mkd;\
-					ln Template/Makefile $DIR/Makefile;\
-					mkdir $DIR/Media;\
-					echo "New directory created: [$DIR]";\
-			}
+	bash$Goldberg/> make new
 	Enter directory name: foobar
 	New directory created: [999_foobar]
 
-	bash$Godberg/> cd 999_foobar
+	bash$Goldberg/> cd 999_foobar
 
-	bash$Godberg/999_foobar> ls
-	Makefile  Media  publish.log  text.mkd
-
+	bash$Goldberg/999_foobar> ls
+	Makefile@ Media/ publish.log text.mkd
 
 Message directory
 -----------------
 
-
-
-Each message directory contains a *Makefile* to manage our blog entry, a
-*Media* directory where to-be-included-in-our-HTML-content pictures and
-videos files are stored, a *publish.log* file keeping track of where the
-blog entry was uploaded and a *text.mkd* file which is where we will
-write our message. The raw content of *text.mkd* looks like this:
+Each message directory contains a symbolic link to the template
+*Makefile@* to manage my blog entry, a *Media/* directory where
+to-be-included-in-our-HTML-content pictures and videos files are stored,
+a *publish.log* file keeping track of where and when the blog entry was
+uploaded and a *text.mkd* file which is where I will write my message.
+The raw content of *text.mkd* looks like this:
 
 <pre format="highlight -Xfls zellner -S HTML -c highlight.css" >
 <![CDATA[
-<!--
-Introduction/Title
-==================
+<!-- vim:spell:spelllang=en:
+Note that the article title is missing.
+It is managed directly by DotClear2.
+- - - - - - - - - - - - - - - - -
+Insert below a short introduction
+=================================
 -->
 
 <!-- :::::::::: EXCERPT SEPARATOR :::::::::: -->
@@ -156,9 +138,10 @@ Content
 ]]>
 </pre>
 
-Blabla
+As previously, a Makefile in the directory gives access to a bunch of
+handful commands:
 
-	bash$Godberg/999_foobar> make help
+	bash$Goldberg/999_foobar make help
 	Usage:
 			make [all]: only format document
 			make view: format document and open with web browser
@@ -166,15 +149,80 @@ Blabla
 			make [CONFIG=foobar] publish: publish .xhtml document to a DotClear blog
 			make debug: wrap HTML with headers and output the result in debug.xhtml
 			make help: display this help
-	
+
+The make commands *view*, *clean* and *help* are pretty
+self-explanatory. What is left for explanation is the text formatting
+process. As mentioned previously, it is based on an original *text.mkd*
+markdown file from which I generate (x)HTML.
+
+### Text processing ###
+
+The *text.mkd* is written using the markdown language. With the help of
+a PERL script written by John Gruber, it is parsed and transformed into
+a well-formatted XHTML document.
+
+Things could be as simple as this, except that I always want more and
+I've written myself some text/XML parsers to enhance the result of the
+text formatting process. Currently, I am using:
+
+- `FormatPRE.pl`, a script to scan an XML document for any `<pre>`
+  element having an attribute `format="highlight -Xfls -s zellner -S INI
+  -c highlight.css"`. It replace the content of the `<pre>` tag by the
+  output of the command inside `format="(.*)"` when feed with the
+  original content of `<pre>`. The `highlight` command is given here as
+  an example, but you could use anything you want: `tr`, `fmt`, `xxd`,
+  `pygment`, ...
+
+- `LowerHeaders.pl`, markdown files are written using the convenient
+  header syntax where text is underlined using a bunch of "`==========`"
+  or "`-------`". Once formatted, it corresponds to the HTML `<h1>` and
+  `<h2>` tags. This PERL script decreases the header hierarchy, such as
+  `<h1>` becomes `<h3>`, `<h2>` becomes `<h4>`, etc. in order to easily
+  integrate with DotClear2, where blog entry titles are not `<h1>`
+  elements but `<h4>`ones;
+
+- `NumberHeaders.pl` is another PERL script to number headers. Skipping
+  those before the *::: EXCERPT SEPARATOR :::* beacon;
+
+- `RewriteURLs.pl` is a SAX filter written in PERL. It is invoked using
+  `./RewriteURLs.pl src dst` and replace every occurrence of *src* in a
+  `href`, `src` or `data` attribute by *dst*. It is needed to handle
+  media file relocations (since their local URI is different from their
+  remote counter-part);
+
+### Blog publishing ###
+
+Reusing one of my old python script to communicate with the XML-RPC API
+of DotClear2, I have written an additional PERL script, `publish.pl`,
+which takes care of uploading each file in the *Media/* directory to the
+remote DotClear2 blog, retrieving their remote URL and using it to
+overwrite their local URL in the XHTML document send later on the
+DotClear2 blog.
+
+In practice, I only have to specify a DotClear2 blog configuration file
+when invoking `make publish`. The system takes care of uploading the
+media files, rewriting their URLs and publishing the resulting XHTML
+document over XML-RPC. The *publish.log* keeps track of the
+configuration files used and of the message Id:
+
+<pre format="highlight -Xfls zellner -S Bash -c highlight.css" >
+# ConfigFile MsgId [date]
+sheeva	4	2010-07-12
+mirror	11	2010-07-12
+ovh	11	2010-07-13
+</pre>
+
 Tip
 ---
 
 To get syntax highlighting in VIM working when editing Markdown files,
-set the filetype variable to `markdown.html`. See [this vim addon][3] to
-enable VIM snippets and syntax for markdown files.
+set the filetype variable to `markdown.html`. See [this vim add-on][3]
+to enable VIM snippets and syntax for markdown files.
 
-[0]: http://jekyll.com
-[1]: http://markdown.com
-[2]: http://git.com
-[3]: http://vim-addon.com
+*/DS*
+
+[0]: http://github.com/mojombo/jekyll
+[1]: http://daringfireball.net/projects/markdown/
+[2]: http://git-scm.com
+[3]: http://www.vim.org/scripts/script.php?script_id=2882
+[4]: Media/text.mkd
