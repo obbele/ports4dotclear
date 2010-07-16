@@ -20,9 +20,11 @@ new:
 	read -p "Enter directory name: " && {\
 		DIR="999_$$REPLY";\
 		mkdir $$DIR;\
-		cp $(TPL)/publish.log $$DIR/publish.log;\
-		cp $(TPL)/text.mkd $$DIR/text.mkd;\
-		ln $(TPL)/Makefile $$DIR/Makefile;\
-		mkdir $$DIR/Media;\
+		cd $$DIR;\
+		cp ../$(TPL)/publish.log publish.log;\
+		cp ../$(TPL)/text.mkd text.mkd;\
+		ln -s ../$(TPL)/Makefile Makefile;\
+		mkdir Media;\
+		cd ..;\
 		echo "New directory created: [$$DIR]";\
 	}
