@@ -19,7 +19,10 @@ debug: $(DOC)
 publish: $(XHTML)
 	$(SCRIPTS)/publish.pl $(XHTML) $(CONFIG)
 
-$(XHTML): $(DOC) Makefile
+highlight.css:
+	highlight -X --print-style -c highlight.css
+
+$(XHTML): $(DOC) Makefile highlight.css
 	$(SCRIPTS)/Markdown_1.0.1/Markdown.pl $(DOC) |\
 		$(SCRIPTS)/XML-RPC/dotclear.py -w |\
 		$(SCRIPTS)/Externalize.pl |\
