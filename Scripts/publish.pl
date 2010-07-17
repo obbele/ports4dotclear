@@ -131,8 +131,10 @@ sub update_publish_date($$)
 	open(my $input, "<$temp");
 	open(my $output, ">$LOG");
 	while(<$input>) {
-		if (/^$config/) {
-			print $output "$config\t$id\t".`date +%Y-%m-%d`."\n";
+		if (/^$config\s*$id\s*([0-9-]*)/) {
+			my $first_date = $1;
+			chomp( my $new_date = `date +%Y-%m-%d`);
+			print $output "$config\t$id\t$first_date\t$new_date\n";
 		} else {
 			print $output $_;
 		}
@@ -165,8 +167,9 @@ if (defined($ID)) {
 	system(@cmd) == 0 or die("system @cmd failed: $!");
 
 	my $last_id = get_last_id($CONFIG);
+	chomp( my $date = `date +%Y-%m-%d`);
 	open(my $fh, ">>$LOG") or die $!;
-	print $fh "$CONFIG\t$last_id\t".`date +%Y-%m-%d`."\n";
+	print $fh "$CONFIG\t$last_id\t$date\t$date\n";
 	close($fh);
 }
 
