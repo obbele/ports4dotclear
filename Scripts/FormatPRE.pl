@@ -51,6 +51,7 @@ sub new {
 	my %options = @_;
 
 	# Set our flag used when parsing to-be-formatted <pre> tags
+	$options{"formatTag"} = undef;
 	$options{"formatCmd"} = undef;
 	$options{"formatData"} = "";
 
@@ -60,12 +61,12 @@ sub new {
 sub start_element {
 	my ($self, $data) = @_;
 
-	# if find a <pre format="toto"> tag
+	# if find a <X format="toto"> tag
 	# 	store cmd information and delete this attribute from the
 	# 	xhtml output
-	if ( $data->{Name} eq "pre"
-		and defined($data->{Attributes}->{"{}format"}) )
+	if (defined($data->{Attributes}->{"{}format"}) )
 	{
+		$self->{formatTag} = $data->{Name};
 		$self->{formatCmd} = $data->{Attributes}->{"{}format"}->{"Value"};
 		delete $data->{Attributes}->{"{}format"};
 	}
@@ -97,7 +98,7 @@ sub end_element {
 	# when leaving a <pre> element,
 	# 	convert our data and
 	# 	reinitialise our filter
-	if ( $data->{Name} eq "pre" and defined($self->{formatCmd}) ) {
+	if (defined($self->{formatCmd}) and $data->{Name} eq $self->{formatTag}) {
 
 		my $input = $self->{formatData};
 		$input =~ s/^[\s\n\r]*//; # chop first new lines
@@ -107,6 +108,7 @@ sub end_element {
 		$self->outputRawXML($output);
 
 		# Do not forget to reinitialize our flags !
+		$self->{formatTag} = undef;
 		$self->{formatCmd} = undef;
 		$self->{formatData} = "";
 	}
