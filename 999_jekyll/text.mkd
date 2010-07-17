@@ -30,17 +30,19 @@ Computer science is all about accelerating the flow of data. This system
 doesn't escape this rule. Using it for posting a new entry on a
 DotClear2 blog is as simple as doing:
 
-	bash$Goldberg/> make new
-	Enter directory name: foobar
-	New directory created: [999_foobar]
+<pre extern="highlight -Xfs zellner -S console">
+bash:Goldberg/$ make new
+Enter directory name: foobar
+New directory created: [999_foobar]
 
-	bash$Goldberg/> cd 999_foobar
+bash:Goldberg/$ cd 999_foobar
 
-	bash$Goldberg/999_foobar> make edit
+bash:Goldberg/999_foobar$ make edit
 
-	bash$Goldberg/999_foobar> make view
+bash:Goldberg/999_foobar$ make view
 
-	bash$Goldberg/999_foobar> make CONFIG=ovh publish
+bash:Goldberg/999_foobar$ make CONFIG=ovh publish
+</pre>
 
 1. `make new` clone a template message and create our working directory
 *999\_foobar*, where *foobar* is my message codename.
@@ -73,11 +75,13 @@ Root directory
 The system is organised by a hierarchy of folders. At the top, we've got
 something like this:
 
-	bash$~> cd Goldberg
-	bash$Goldberg/> ls
-	10_deepBlue/ 11_mails/ 12_SVGs/
-	999_foobar/ 999_jekyll/ 999_mysql/
-	Makefile Scripts/ Template/
+<pre extern="highlight -Xfs zellner -S console">
+bash:~$ cd Goldberg
+bash:Goldberg/$ ls
+10_deepBlue/ 11_mails/ 12_SVGs/
+999_foobar/ 999_jekyll/ 999_mysql/
+Makefile Scripts/ Template/
+</pre>
 
 There is one folder for each blog entry (`deepBlue`, `mails`, `SVGs`,
 `jekyll`, ...). The numbers are used to sort directories by
@@ -91,25 +95,29 @@ every new message.
 Finally, the *Makefile* file can recurse over child folders and be used
 to control the whole system:
 
-	bash$Goldberg/> make help
-	Usage:
-		make [all]: format all documents
-		make new: create a new directory based on Template/
-		make clean: remove all generated files
-		make view: open all documents within a web browser
-		make help: display this help
+<pre extern="highlight -Xfs zellner -S console">
+bash:Goldberg/$ make help
+Usage:
+	make [all]: format all documents
+	make new: create a new directory based on Template/
+	make clean: remove all generated files
+	make view: open all documents within a web browser
+	make help: display this help
+</pre>
 
 From this root directory, invoking `make new` clones the *Template*
 directory:
 
-	bash$Goldberg/> make new
-	Enter directory name: foobar
-	New directory created: [999_foobar]
+<pre extern="highlight -Xfs zellner -S console">
+bash:Goldberg/$ make new
+Enter directory name: foobar
+New directory created: [999_foobar]
 
-	bash$Goldberg/> cd 999_foobar
+bash:Goldberg/$ cd 999_foobar
 
-	bash$Goldberg/999_foobar> ls
-	Makefile@ Media/ publish.log text.mkd
+bash:Goldberg/999_foobar$ ls
+Makefile@ Media/ publish.log text.mkd
+</pre>
 
 Message directory
 -----------------
@@ -121,7 +129,7 @@ a *publish.log* file keeping track of where and when the blog entry was
 uploaded and a *text.mkd* file which is where I will write my message.
 The raw content of *text.mkd* looks like this:
 
-<pre format="highlight -Xfls zellner -S HTML -c highlight.css" >
+<pre extern="highlight -Xfls zellner -S HTML" >
 <![CDATA[
 <!-- vim:spell:spelllang=en:
 Note that the article title is missing.
@@ -141,14 +149,16 @@ Content
 As previously, a Makefile in the directory gives access to a bunch of
 handful commands:
 
-	bash$Goldberg/999_foobar make help
-	Usage:
-			make [all]: only format document
-			make view: format document and open with web browser
-			make clean: remove all generated files
-			make [CONFIG=foobar] publish: publish .xhtml document to a DotClear blog
-			make debug: wrap HTML with headers and output the result in debug.xhtml
-			make help: display this help
+<pre extern="highlight -Xfs zellner -S console">
+bash:Goldberg/999_foobar$ make help
+Usage:
+		make [all]: only format document
+		make view: format document and open with web browser
+		make clean: remove all generated files
+		make [CONFIG=foobar] publish: publish .xhtml document to a DotClear blog
+		make debug: wrap HTML with headers and output the result in debug.xhtml
+		make help: display this help
+</pre>
 
 The make commands *view*, *clean* and *help* are pretty
 self-explanatory. What is left for explanation is the text formatting
@@ -167,7 +177,7 @@ text formatting process. Currently, I am using:
 
 - `FormatPRE.pl`, a script to scan an XML document for any `<pre>`
   element having an attribute `format="highlight -Xfls -s zellner -S INI
-  -c highlight.css"`. It replace the content of the `<pre>` tag by the
+ "`. It replace the content of the `<pre>` tag by the
   output of the command inside `format="(.*)"` when feed with the
   original content of `<pre>`. The `highlight` command is given here as
   an example, but you could use anything you want: `tr`, `fmt`, `xxd`,
@@ -205,7 +215,7 @@ media files, rewriting their URLs and publishing the resulting XHTML
 document over XML-RPC. The *publish.log* keeps track of the
 configuration files used and of the message Id:
 
-<pre format="highlight -Xfls zellner -S Bash -c highlight.css" >
+<pre extern="highlight -Xfls zellner -S Bash" >
 # ConfigFile MsgId [date]
 sheeva	4	2010-07-12
 mirror	11	2010-07-12

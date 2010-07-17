@@ -22,7 +22,7 @@ publish: $(XHTML)
 $(XHTML): $(DOC) Makefile
 	$(SCRIPTS)/Markdown_1.0.1/Markdown.pl $(DOC) |\
 		$(SCRIPTS)/XML-RPC/dotclear.py -w |\
-		$(SCRIPTS)/FormatPRE.pl |\
+		$(SCRIPTS)/Externalize.pl |\
 		$(SCRIPTS)/NumberHeaders.pl |\
 		$(SCRIPTS)/LowerHeaders.pl >$@
 

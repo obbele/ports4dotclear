@@ -51,9 +51,9 @@ sub new {
 	my %options = @_;
 
 	# Set our flag used when parsing to-be-formatted <pre> tags
-	$options{"formatTag"} = undef;
-	$options{"formatCmd"} = undef;
-	$options{"formatData"} = "";
+	$options{"externTag"} = undef;
+	$options{"externCmd"} = undef;
+	$options{"externData"} = "";
 
 	return bless \%options, $class;
 }
@@ -61,14 +61,14 @@ sub new {
 sub start_element {
 	my ($self, $data) = @_;
 
-	# if find a <X format="toto"> tag
+	# if find a <X extern="toto"> tag
 	# 	store cmd information and delete this attribute from the
 	# 	xhtml output
-	if (defined($data->{Attributes}->{"{}format"}) )
+	if (defined($data->{Attributes}->{"{}extern"}) )
 	{
-		$self->{formatTag} = $data->{Name};
-		$self->{formatCmd} = $data->{Attributes}->{"{}format"}->{"Value"};
-		delete $data->{Attributes}->{"{}format"};
+		$self->{externTag} = $data->{Name};
+		$self->{externCmd} = $data->{Attributes}->{"{}extern"}->{"Value"};
+		delete $data->{Attributes}->{"{}extern"};
 	}
 
 	# print opening tag <name>
@@ -83,9 +83,9 @@ sub start_element {
 sub characters {
 	my ($self, $chars) = @_;
 
-	if (defined $self->{formatCmd}) {
-		# forward to our special formatData variable
-		$self->{formatData} .= $chars->{Data};
+	if (defined $self->{externCmd}) {
+		# forward to our special externData variable
+		$self->{externData} .= $chars->{Data};
 	} else {
 		# else forward to normal output
 		$self->SUPER::characters($chars);
@@ -98,19 +98,19 @@ sub end_element {
 	# when leaving a <pre> element,
 	# 	convert our data and
 	# 	reinitialise our filter
-	if (defined($self->{formatCmd}) and $data->{Name} eq $self->{formatTag}) {
+	if (defined($self->{externCmd}) and $data->{Name} eq $self->{externTag}) {
 
-		my $input = $self->{formatData};
+		my $input = $self->{externData};
 		$input =~ s/^[\s\n\r]*//; # chop first new lines
 		$input =~ s/[\s\n\r]*$//; # chop last empty lines
-		my $output = externalize( $self->{formatCmd}, $input );
+		my $output = externalize( $self->{externCmd}, $input );
 
 		$self->outputRawXML($output);
 
 		# Do not forget to reinitialize our flags !
-		$self->{formatTag} = undef;
-		$self->{formatCmd} = undef;
-		$self->{formatData} = "";
+		$self->{externTag} = undef;
+		$self->{externCmd} = undef;
+		$self->{externData} = "";
 	}
 
 	$self->SUPER::end_element($data);
