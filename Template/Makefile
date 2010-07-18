@@ -8,8 +8,8 @@ all: $(XHTML)
 edit:
 	$(EDITOR) $(DOC)
 
-view: $(XHTML)
-	xdg-open $^
+view: all
+	xdg-open $(XHTML)
 
 debug: $(DOC)
 	$(SCRIPTS)/Markdown_1.0.1/Markdown.pl $^ |\
@@ -31,14 +31,12 @@ $(XHTML): $(DOC) Makefile highlight.css
 
 help:
 	@echo "Usage:"
-	@echo "	make [all]: only format document"
-	@echo "	make view: format document and open with web browser"
+	@echo "	make [all]: only format the document"
+	@echo "	make view: format the document and open it with a web browser"
 	@echo "	make clean: remove all generated files"
-	@echo "	make [CONFIG=foobar] publish: publish .xhtml"\
-		    "document to a DotClear blog"
-	@echo "	make debug: wrap HTML with headers and"\
-		    "output the result in $(DEBUG)"
-	@echo "	make edit: guess wha ?"
+	@echo "	make [CONFIG=foobar] publish: publish *.xhtml to a DotClear blog"
+	@echo "	make debug: wrap HTML with headers and output the result in $(DEBUG)"
+	@echo "	make edit: guess what ?"
 	@echo "	make help: display this help"
 
 clean:
