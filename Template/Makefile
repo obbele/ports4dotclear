@@ -1,63 +1,15 @@
-SCRIPTS=../Scripts
-DOC=$(wildcard *.mkd)
-XHTML=$(DOC:.mkd=.xhtml)
-DEBUG=debug.xhtml
+# Define here additional files to process while creating XHTML document
+# e.g.
+# ADDITIONAL_FILES = Media/foobar
+ADDITIONAL_FILES = 
 
-all: $(XHTML)
+# Source generic Makefile
+# IMPORTANT: do not move this line !
+#            keep $(ADDITIONAL_FILES) variable declaration above
+#            and new targets below it
+include ../Scripts/Makefile.generic
 
-edit:
-	$(EDITOR) $(DOC)
-
-view: all
-	xdg-open $(XHTML)
-
-debug: $(DOC)
-	$(SCRIPTS)/Markdown_1.0.1/Markdown.pl $^ |\
-		$(SCRIPTS)/XML-RPC/dotclear.py -w >$(DEBUG)
-
-# CONFIG==XML-RPC config file
-publish: $(XHTML)
-	$(SCRIPTS)/publish.pl $(XHTML) $(CONFIG)
-
-highlight.css:
-	highlight -X --print-style -c highlight.css
-
-$(XHTML): $(DOC) Makefile highlight.css
-	$(SCRIPTS)/Markdown_1.0.1/Markdown.pl $(DOC) |\
-		$(SCRIPTS)/XML-RPC/dotclear.py -w |\
-		$(SCRIPTS)/Externalize.pl |\
-		$(SCRIPTS)/NumberHeaders.pl |\
-		$(SCRIPTS)/LowerHeaders.pl >$@
-
-help:
-	@echo "make [all]:"
-	@echo "	format the text document"
-	@echo ""
-	@echo "make help:"
-	@echo "	display this help"
-	@echo ""
-	@echo "make edit:"
-	@echo "	launch \$$EDITOR to edit \"$(DOC)\""
-	@echo ""
-	@echo "make view:"
-	@echo "	open the document with a web browser"
-	@echo ""
-	@echo "make [CONFIG=foobar]"
-	@echo "	publish: publish *.xhtml to a DotClear blog"
-	@echo ""
-	@echo "	Configuration files are searched for in $(SCRIPTS)/XML-RPC/."
-	@echo "	If no configuration name is given, use, thhe last one logged"
-	@echo "	in \"publish.log\""
-	@echo ""
-	@echo "make clean:"
-	@echo "	remove all generated files"
-	@echo ""
-	@echo "make debug:"
-	@echo "	process markdown syntax and wrap the result with XHTML headers"
-	@echo "	output the data to a local \"$(DEBUG)\" file"
-	@echo ""
-
-clean:
-	-rm $(XHTML) $(DEBUG) highlight.css
-
-.PHONY: all view help publish debug
+# Describe how to process your additional targets, e.g.:
+#
+# Media/foobar: foobar.src
+# 	my_super_script <$^ >$@

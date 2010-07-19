@@ -1,0 +1,64 @@
+SCRIPTS=../Scripts
+DOC=$(wildcard *.mkd)
+XHTML=$(DOC:.mkd=.xhtml)
+ADDITIONAL_FILES+=
+DEBUG=debug.xhtml
+
+all: $(XHTML) $(ADDITIONAL_FILES)
+
+edit:
+	$(EDITOR) $(DOC)
+
+view: all
+	xdg-open $(XHTML)
+
+debug: $(DOC)
+	$(SCRIPTS)/Markdown.pl $^ |\
+		$(SCRIPTS)/XML-RPC/dotclear.py -w >$(DEBUG)
+
+# CONFIG==XML-RPC config file
+publish: $(XHTML) $(ADDITIONAL_FILES)
+	$(SCRIPTS)/publish.pl $(XHTML) $(CONFIG)
+
+highlight.css:
+	highlight -X --print-style -c highlight.css
+
+$(XHTML): $(DOC) Makefile highlight.css
+	$(SCRIPTS)/Markdown.pl $(DOC) |\
+		$(SCRIPTS)/XML-RPC/dotclear.py -w |\
+		$(SCRIPTS)/Externalize.pl |\
+		$(SCRIPTS)/NumberHeaders.pl |\
+		$(SCRIPTS)/LowerHeaders.pl >$@
+
+help:
+	@echo "make [all]:"
+	@echo "	format the text document"
+	@echo ""
+	@echo "make help:"
+	@echo "	display this help"
+	@echo ""
+	@echo "make edit:"
+	@echo "	launch \$$EDITOR to edit \"$(DOC)\""
+	@echo ""
+	@echo "make view:"
+	@echo "	open the document with a web browser"
+	@echo ""
+	@echo "make [CONFIG=foobar] publish:"
+	@echo "	publish *.xhtml to a DotClear blog"
+	@echo ""
+	@echo "	Configuration files are searched for in $(SCRIPTS)/XML-RPC/."
+	@echo "	If no configuration name is given, use, thhe last one logged"
+	@echo "	in \"publish.log\""
+	@echo ""
+	@echo "make clean:"
+	@echo "	remove all generated files"
+	@echo ""
+	@echo "make debug:"
+	@echo "	process markdown syntax and wrap the result with XHTML headers"
+	@echo "	output the data to a local \"$(DEBUG)\" file"
+	@echo ""
+
+clean:
+	-rm $(XHTML) $(DEBUG) highlight.css $(ADDITIONAL_FILES)
+
+.PHONY: all view help publish debug

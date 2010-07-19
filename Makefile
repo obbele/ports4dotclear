@@ -9,12 +9,12 @@ all view clean:
 	done
 
 help:
-	@echo "Usage:"
-	@echo "	make [all]: format all documents"
-	@echo "	make new: create a new directory based on Template/"
-	@echo "	make clean: remove all generated files"
-	@echo "	make view: open all documents within a web browser"
-	@echo "	make help: display this help"
+	@echo "Make targets:"
+	@echo "	[all] : format all documents"
+	@echo "	clean : remove all generated files"
+	@echo "	help  : display this help"
+	@echo "	new   : create a new directory based on $(TPL)/"
+	@echo "	view  : open all documents within a web browser"
 
 new:
 	@read -p "Enter directory name: " && {\
