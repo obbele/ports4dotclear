@@ -1,4 +1,62 @@
 #!/usr/bin/perl
+=pod
+
+=head1 NAME
+
+Externalize.pl - Process part of a XML tree with external commands
+
+=head1 DESCRIPTION
+
+Externalize.pl is a basic XML SAX filter. It looks for any occurence of
+'<TAG extern="foobar"></TAG>', takes the data inside this element and
+output the result back in the XML tree.
+
+=head1 USAGE
+
+Externalize.pl reads its input from stdin and outputs the result to
+stdout. You should use it this way:
+
+	./Externalize.pl <doc.xhtml >result.xhtml
+
+=head1 EXAMPLES
+
+=head2 Uppercase example
+
+The following XML extract:
+
+	<pre extern="tr a-z A-Z">
+		Hello World !
+	</pre>
+
+would become:
+
+	<pre>
+		HELLO WORLD !
+	</pre>
+
+=head2 Sort example
+
+The following XML extract:
+
+	<div id="foobar" extern="sort">
+		1
+		3
+		9
+		8
+		2
+	</div>
+
+would become:
+
+	<div id="foobar" >
+		1
+		2
+		3
+		8
+		9
+	</div>
+
+=cut
 
 use strict;
 use warnings;
@@ -30,7 +88,7 @@ my $text;
 	$text = <>;
 	$text = encode_utf8($text);
 
-	# Insert DOCTYPE declaration, since XML::SAX::* refuse to handle it
+	# Insert DOCTYPE declaration, since XML::SAX::* refuses to handle it
 	print '<?xml version="1.0" encoding="UTF-8"?>'."\n";
 	print '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"'."\n";
 	print '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'."\n";
@@ -149,7 +207,7 @@ sub externalize {
 	return $output;
 }
 
-# Alternative version
+# Alternative version for inserting CSS link in the HTML headers
 sub insertCSS
 {
 	my ($self, $data) = @_; # $data is a reference node to be cloned

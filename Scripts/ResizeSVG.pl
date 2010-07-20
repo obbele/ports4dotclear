@@ -1,5 +1,48 @@
 #!/usr/bin/perl
 
+=pod
+
+=head1 NAME
+
+ResizeSVG.pl - Put a C<viewBox> declaration inside SVG headers
+
+=head1 DESCRIPTION
+
+ResizeSVG.pl is a basic XML SAX filter. Given a properly formatted SVG
+documents, it add a C<viewBox> attribute to its root C<<svg>> element
+and redefine its C<width> and C<height> attribute to C<100%>.
+
+This way, SVG object can be displayed and scaled easily from an XHTML
+document.
+
+=head1 USAGE
+
+ResizeSVG.pl reads its input from stdin and outputs the result to
+stdout. You should use it this way:
+
+	./ResizeSVG.pl <doc.xhtml >result.xhtml
+
+=head1 EXAMPLES
+
+The initial root element of the SVG document
+
+	<svg
+		...
+		width="275"
+		height="308"
+		...
+
+would become:
+
+	<svg
+		...
+		width="100%"
+		height="100%"
+		viewBox="0 0 275 308"
+		...
+
+=cut
+
 use strict;
 use warnings;
 

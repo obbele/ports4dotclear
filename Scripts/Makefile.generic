@@ -1,8 +1,32 @@
+# Generic Makefile for use in each message folder
+#
+# It is simply used as a way to coordinate the calls to the various
+# text processing and publishing scripts
+
+
+# This folder, but we will normally be called from MSGS_ROOT/xx_msgname
 SCRIPTS=../Scripts
+
+# Glob our markdown file
 DOC=$(wildcard *.mkd)
+
+# Deduce from it our XHTML output
 XHTML=$(DOC:.mkd=.xhtml)
-ADDITIONAL_FILES+=
+
+# Helping feature, in case we would like to test manually a text
+# filtering / processing script. We can simply type "make debug" to get
+# a raw XHTML document (processed from Markdown.pl) and then play with
+# it freely
 DEBUG=debug.xhtml
+
+# hopefully, will be defined before this Makefile is included
+ADDITIONAL_FILES+=
+
+
+# Common rules definition for every message folder
+##################################################
+
+.PHONY: all view help publish debug
 
 all: $(XHTML) $(ADDITIONAL_FILES)
 
@@ -17,7 +41,7 @@ debug: $(DOC)
 		$(SCRIPTS)/XML-RPC/dotclear.py -w >$(DEBUG)
 
 # CONFIG==XML-RPC config file
-publish: $(XHTML) $(ADDITIONAL_FILES)
+publish: all
 	$(SCRIPTS)/publish.pl $(XHTML) $(CONFIG)
 
 highlight.css:
@@ -44,7 +68,8 @@ help:
 	@echo "	open the document with a web browser"
 	@echo ""
 	@echo "make [CONFIG=foobar] publish:"
-	@echo "	publish *.xhtml to a DotClear blog"
+	@echo "	publish *.xhtml to a DotClear blog, including *ALL* the files"
+	@echo "	in the directory \"Media/\""
 	@echo ""
 	@echo "	Configuration files are searched for in $(SCRIPTS)/XML-RPC/."
 	@echo "	If no configuration name is given, use, thhe last one logged"
@@ -60,5 +85,3 @@ help:
 
 clean:
 	-rm $(XHTML) $(DEBUG) highlight.css $(ADDITIONAL_FILES)
-
-.PHONY: all view help publish debug

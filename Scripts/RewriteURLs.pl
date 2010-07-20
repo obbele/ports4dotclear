@@ -1,5 +1,37 @@
 #!/usr/bin/perl
 
+=pod
+
+=head1 NAME
+
+RewriteURLs.pl - Substitute URLs by new ones
+
+=head1 DESCRIPTION
+
+RewriteURLs.pl is a basic XML SAX filter. It looks for any XML elements
+with a C<href>, C<src> or C<data> attribute and, if this attribute
+matched the script argument C<old_url>, replaces it by C<new_url>.
+
+=head1 USAGE
+
+RewriteURLs.pl reads its input from stdin and outputs the result to
+stdout. You should use it this way:
+
+	./RewriteURLs.pl old_url new_url  <doc.xhtml >result.xhtml
+
+=head1 EXAMPLES
+
+The following XML extract:
+
+	<img src="Media/foobar.jpg"/>
+
+would become, once filtered with C<./RewriteURLs.pl Media/foobar.jpg
+/blog/public/foobar.jpg>:
+
+	<img src="/blog/public/foobar.jpg"/>
+
+=cut
+
 use strict;
 use warnings;
 

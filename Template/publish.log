@@ -1,1 +1,4 @@
-# ConfigFile MsgId first_date last_date
+# Keep track of previously published articles
+# (this is a bare table with spaces/tab-separated values
+#
+# ConfigName MsgId first_date last_date

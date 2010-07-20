@@ -1,10 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # 2010-01-09
-# © Copyright 2010 Johan. All Rights Reserved.
+# © Copyright 2010 John Obbele. All Rights Reserved.
 #
-# Probe XML-RPC server for a brief list of method, their signature and a short
-# description
+# Probe a XML-RPC server for a brief list of method, including their
+# signature and a short description
 # ref: http://xmlrpc-c.sourceforge.net/introspection.html
 # 
 # See also http://www.sixapart.com/developers/xmlrpc/ 
@@ -21,5 +21,5 @@ def listMethods(s):
         print
 
 if __name__ == '__main__':
-    server = xmlrpclib.Server("http://sheevaplug/dc2/index.php?xmlrpc/default")
+    server = xmlrpclib.Server("http://myServer/dc2/index.php?xmlrpc/default")
     listMethods(server)

@@ -6,7 +6,11 @@ Insert below a short introduction
 =================================
 -->
 
-<!-- :::::::::: EXCERPT SEPARATOR :::::::::: -->
+Subject introduction ...
 
-Content
-=======
+<!-- :::::::::::::::::::::: EXCERPT SEPARATOR :::::::::::::::::::::: -->
+
+Main content
+============
+
+Insert here.
