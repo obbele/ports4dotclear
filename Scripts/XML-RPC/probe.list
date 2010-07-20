@@ -1,0 +1,204 @@
+wp.getCommentStatusList
+[['array'], 'string', 'string']
+Retrieve all of the comment statuses.
+
+wp.newComment
+['string', 'string', {'struct': 'struct'}]
+Create a new comment for a given post ID.
+
+wp.editComment
+[True, 'string', 'string', {'struct': 'struct'}]
+Edit a comment with given ID.
+
+wp.deleteComment
+[True, 'string', 'string']
+Delete a comment with given ID.
+
+wp.getComments
+[['array'], 'string', 'string', {'struct': 'struct'}]
+Gets a set of comments for a given post.
+
+wp.getCommentCount
+[['array'], 'string', 'string']
+Retrieve comment count.
+
+wp.getComment
+[{'struct': 'struct'}, 'string', 'string']
+Gets a comment, given it's comment ID.
+
+wp.setOptions
+[{'struct': 'struct'}, 'string', 'string', {'struct': 'struct'}]
+Update blog options
+
+wp.getOptions
+[{'struct': 'struct'}, 'string', 'string', ['array']]
+Retrieve blog options
+
+wp.getPageTemplates
+[{'struct': 'struct'}, 'string', 'string']
+Retrieve page templates.
+
+wp.getPageStatusList
+[['array'], 'string', 'string']
+Retrieve all of the pages statuses.
+
+wp.getPostStatusList
+[['array'], 'string', 'string']
+Retrieve all of the post statuses.
+
+wp.uploadFile
+[{'struct': 'struct'}, 'string', 'string', {'struct': 'struct'}]
+Upload a file
+
+wp.suggestCategories
+[['array'], 'string', 'string', 'string']
+Get an array of categories that start with a given string.
+
+wp.deleteCategory
+[True, 'string', 'string']
+Delete a category with a given ID.
+
+wp.newCategory
+['string', 'string', {'struct': 'struct'}]
+Create a new category.
+
+wp.getTags
+[['array'], 'string', 'string']
+Get list of all tags for the blog.
+
+wp.getCategories
+[['array'], 'string', 'string']
+Get an array of available categories on a blog.
+
+wp.getAuthors
+[['array'], 'string', 'string']
+Get an array of users for the blog.
+
+wp.getPageList
+[['array'], 'string', 'string']
+Get an array of all the pages on a blog. Just the minimum details, lighter than wp.getPages.
+
+wp.editPage
+[True, 'string', 'string', {'struct': 'struct'}, True]
+Make changes to a blog page.
+
+wp.deletePage
+[True, 'string', 'string']
+Removes a page from the blog.
+
+wp.newPage
+['string', 'string', {'struct': 'struct'}, True]
+Create a new page.
+
+wp.getPages
+[['array'], 'string', 'string']
+Get an array of all the pages on a blog.
+
+wp.getPage
+[{'struct': 'struct'}, 'string', 'string']
+Get the page identified by the page ID.
+
+wp.getUsersBlogs
+[['array'], 'string', 'string']
+Retrieve the blogs of the user.
+
+mt.supportedTextFilters
+[]
+Retrieve information about supported text filters.
+
+mt.supportedMethods
+[]
+Retrieve information about the XML-RPC methods supported by the server.
+
+mt.publishPost
+[True, 'string', 'string', 'string']
+Retrieve pings list for a post
+
+mt.setPostCategories
+[True, 'string', 'string', 'string', ['array']]
+Sets the categories for a post
+
+mt.getPostCategories
+[['array'], 'string', 'string', 'string']
+List of all categories to which the post is assigned
+
+mt.getCategoryList
+[['array'], 'string', 'string', 'string']
+List of all categories defined in the weblog
+
+mt.getRecentPostTitles
+[['array'], 'string', 'string', 'string']
+List of most recent posts in the system
+
+metaWeblog.newMediaObject
+[{'struct': 'struct'}, 'string', 'string', 'string', {'struct': 'struct'}]
+Upload a file on the web server
+
+metaWeblog.getCategories
+[['array'], 'string', 'string', 'string']
+List of all categories defined in the weblog
+
+metaWeblog.getRecentPosts
+[['array'], 'string', 'string', 'string']
+List of most recent posts in the system
+
+metaWeblog.getPost
+[{'struct': 'struct'}, 'string', 'string', 'string']
+Returns information about a specific post
+
+metaWeblog.editPost
+[True, 'string', 'string', 'string', {'struct': 'struct'}, True]
+Updates information about an existing entry
+
+metaWeblog.newPost
+['string', 'string', 'string', 'string', {'struct': 'struct'}, True]
+Creates a new post, and optionnaly publishes it.
+
+blogger.getUserInfo
+[{'struct': 'struct'}, 'string', 'string', 'string']
+Return User Info
+
+blogger.getUsersBlogs
+[{'struct': 'struct'}, 'string', 'string', 'string']
+Return user's blog
+
+blogger.getRecentPosts
+[['array'], 'string', 'string', 'string', 'string']
+Return a list of recent posts
+
+blogger.deletePost
+['string', 'string', 'string', 'string', 'string']
+Delete a post
+
+blogger.getPost
+[{'struct': 'struct'}, 'string', 'string', 'string']
+Return a posts by ID
+
+blogger.editPost
+[True, 'string', 'string', 'string', 'string', 'string']
+Edit a post
+
+blogger.newPost
+['string', 'string', 'string', 'string', 'string', 'string']
+New post
+
+system.methodHelp
+['string', 'string']
+Returns a documentation string for the specified method
+
+system.methodSignature
+[['array'], 'string']
+Returns an array describing the return type and required parameters of a method
+
+system.multicall
+[{'struct': 'struct'}, ['array']]
+Returns result of multiple methods calls
+
+system.listMethods
+[['array']]
+Returns an array of available methods on this server
+
+system.getCapabilities
+[{'struct': 'struct'}]
+Returns a struct describing the XML-RPC specifications supported by this server
+

@@ -4,3 +4,6 @@ Requirement:
 	perl-SAX-Writer
 	python3
 	highlight
+
+You will have to manually create configuration files in Scripts/XML-RPC.
+See Scripts/XML-RPC/default.cfg for example.
