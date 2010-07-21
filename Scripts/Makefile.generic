@@ -72,7 +72,7 @@ help:
 	@echo "	in the directory \"Media/\""
 	@echo ""
 	@echo "	Configuration files are searched for in $(SCRIPTS)/XML-RPC/."
-	@echo "	If no configuration name is given, use, thhe last one logged"
+	@echo "	If no configuration name is given, use, the last one logged"
 	@echo "	in \"publish.log\""
 	@echo ""
 	@echo "make clean:"

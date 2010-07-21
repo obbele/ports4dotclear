@@ -137,7 +137,7 @@ sub upload_content_and_rewrite_urls($$)
 		open(my $fh, "<$publish"); 			# read file
 		my ($wpipe, $rpipe);				# rewrite urls pipe
 		my ($temph, $tempname) = tempfile();# retrieve processed output
-		print "processing \"$src\" -> \"$dest\" in tempfile [$tempname]\n";
+		print "replacing \"$src\" by \"$dest\" in tempfile [$tempname]\n";
 		my $pid = open2($rpipe, $wpipe, "$RWURLS", "$src", "$dest");
 		{
 			local $/; # slurping ON

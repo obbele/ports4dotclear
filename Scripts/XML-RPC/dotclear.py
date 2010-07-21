@@ -23,8 +23,8 @@
 Remotely manage DotClear2 posts from the CLI.
 
 Using a small configuration file (which default to default.cfg), list,
-create, modify or delete blog posts. It can also decuced from the
-environment the preferred $EDITOR and used it to edit the content of the
+create, modify or delete blog posts. It can also deduce the preferred
+$EDITOR from the environment and used it to edit the content of the
 post.
 
 For more information on MovableType API, see
