@@ -13,15 +13,16 @@ will default to the last one present in the file C<publish.log> or exit,
 if none is found.
 
 The script will then upload every file in the C<Media/*> directory to
-the DotClear2 blog thanks to the script Scripts/XML-RPC/dotclear.py
-which also gives back the URL of the content on the remote host
-(generally C</blog/public/example.file>). It will use this last
-piece of information to replace every occurence of C<Media/example.file>
-by C</blog/public/example.file> in the XHTML document, thanks to
-C<RewriteURLs.pl>.
+the DotClear2 blog thanks to the script Scripts/XML-RPC/dotclear.py.
 
-Finally, the modified XHTML document is transmitted to DotClear2 for
-creating a new message or editing an old one.
+In return, it gets the URL of the content on the remote host (generally
+C</blog/public/example.file>) and will use it to replace every occurence
+of C<Media/example.file> by C</blog/public/example.file> in the XHTML
+document. See C<RewriteURLs.pl> for more details.
+
+Once the files in C<Media/*> have been processed, the modified XHTML
+document is transmitted to DotClear2 to create a new message or edit an
+old one.
 
 At the end, publish.pl logs the configuration name, the message ID and
 updates the dates in C<publish.log>.

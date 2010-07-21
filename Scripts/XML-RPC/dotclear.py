@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# vim:textwidth=72:expandtab:
 
 # Copyright 2010 John Obbele
 #
@@ -22,8 +23,9 @@
 Remotely manage DotClear2 posts from the CLI.
 
 Using a small configuration file (which default to default.cfg), list,
-create, modify or delete blog posts. If the configuration file set a
-text editor name, it will be used to edit the content of the post.
+create, modify or delete blog posts. It can also decuced from the
+environment the preferred $EDITOR and used it to edit the content of the
+post.
 
 For more information on MovableType API, see
 http://www.sixapart.com/developers/xmlrpc/
@@ -35,7 +37,10 @@ from optparse import OptionParser
 import tempfile, os, os.path, sys
 
 CFG_DEFAULT = "default.cfg"
-BALISE = u"<!-- {0} EXCERPT SEPARATOR {1} -->".format(":"*22, ":"*22)
+
+BALISE_TOKEN = u":: EXCERPT SEPARATOR ::"
+BALISE = u"<!-- {0}{1}{2} -->".format(":"*20, BALISE_TOKEN, ":"*20)
+
 XHTML_TEMPLATE = u"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -63,7 +68,27 @@ XHTML_TEMPLATE = u"""<?xml version="1.0" encoding="UTF-8"?>
 </html>
 """
 
+def wrap_with_template(input):
+    return XHTML_TEMPLATE.format(input)
+
+def split_excerpt(input):
+    """
+    If BALISE_TOKEN is found in the text INPUT, remove the line
+    containing it and return INPUT split in two: the part before the
+    token, and the part after it
+    """
+
+    lines = input.split("\n")
+    for i,line in enumerate(lines):
+        if line.find(BALISE_TOKEN) != -1:
+            break
+
+    before, after = lines[:i], lines[i+1:]
+
+    return '\n'.join(before), '\n'.join(after)
+
 def error(msg):
+    " Simple shortcut for print >>sys.stderr "
     print >>sys.stderr, "Error: "+msg
 
 def display_XMLRPC_errors(msg, fault):
@@ -72,10 +97,15 @@ def display_XMLRPC_errors(msg, fault):
           "error message = {1}\n").format(fault.faultCode,
                                           fault.faultString))
 
-def wrap_with_template(input):
-    return XHTML_TEMPLATE.format(input)
-
 def find_config_file(filename):
+    """ Search for configuration file by name.
+
+    FILENAME may be given with or without the '.cfg extension'.
+
+    Try to locate it in the current working directory.
+    If nothing has been found, search in the present script folder.
+    Otherwire, raise an IOError.
+    """
     if os.path.exists( filename) :
         return filename
     if os.path.exists( filename + ".cfg") :
@@ -97,7 +127,8 @@ def find_config_file(filename):
 class MyBlog():
     def __init__(self, config_file):
         """ Read the  configuration file
-            and create a xmlrpclib """
+        and create a xmlrpclib.Server.
+        """
 
         config_file = find_config_file( config_file)
         config = ConfigParser.ConfigParser()
@@ -130,7 +161,7 @@ class MyBlog():
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
             self.auto_pings = False
 
-        # Blog configuration
+        # Blog configuration / critical settings
         try :
             self.blogid = config.get('Blog', "blogid")
         except ConfigParser.NoSectionError as e:
@@ -152,7 +183,7 @@ class MyBlog():
         except xmlrpclib.Fault as fault:
             display_XMLRPC_errors("connect to server", fault)
 
-        print "Using XML-RPC connection to", self.url 
+        print "Using XML-RPC connection to", self.url
 
     def _selectCategories(self):
         "return an array of struct with categoryId and isPrimary fields"
@@ -189,6 +220,7 @@ class MyBlog():
         """
         Dump existing content to a temporary file and open it for
         modification with self.editor.
+
         Check XML syntax too.
         """
         f, filename = tempfile.mkstemp()
@@ -231,7 +263,7 @@ class MyBlog():
 
     def listLastPosts(self, number):
         """
-        List the last `number` posts
+        List the last `number` posts.
         """
 
         try :
@@ -263,7 +295,7 @@ class MyBlog():
         date = datetime.datetime.strptime(post['dateCreated'].value,
                                           "%Y%m%dT%H:%M:%S")
 
-        print "-" * 79
+        print "-" * 72
         print "[ {0} ] === {1} ===".format(post['postid'],
                                            post['title'])
         if 'categories' in post :
@@ -274,16 +306,26 @@ class MyBlog():
             print "By {0} on {1}".format(post['userid'], date.ctime())
 
         print "( tags: {0} )".format(post['mt_keywords'])
-        print 
+        print
         print post['formatted_text']
-        print 
+        print
         print "Link:", post['link']
         print "permaLink:", post['permaLink']
-        print "-" * 79
+        print "-" * 72
 
     def _fillPost(self, useRawHTML, old_data=None):
+        """
+        if (useRawHTML == True), read data from STDIN
+        else if (self.editor), edit with it
+        else prompt for user input
+
+        Return a (content, publish), where content is a dictionnary
+        with the keys ('title', 'mt_keywords', 'mt_excerpt',
+        'mt_description') suitable for use in metaWeblog.newPost of
+        metaWeblog.editPost and publish is a boolean.
+        """
         # Initialize empty dictionnary ct (aka content)
-        # to send through self.server.metaWeblog.newPost(
+        # to be sent through self.server.metaWeblog.newPost()
         ct = {}
 
         # if no old_data, create a fake one
@@ -323,18 +365,13 @@ class MyBlog():
             text = doc.getElementsByTagName("body")[0].toxml("utf-8")
             #text = text.decode() # convert bytes to string
             text = text.replace("<body>", "").replace("</body>", "")
-            ct['mt_excerpt'], ct['description'] = text.split(BALISE)
+            ct['mt_excerpt'], ct['description'] = split_excerpt( text)
 
         # Method1: custom editor
         elif self.editor :
             prev_data = old_data['formatted_text']
             data = self._externalEditor( wrap_with_template(prev_data) )
-            # if no ct before balise, Python
-            # s.split throw an exception
-            if data.find(BALISE) == 1 :
-                ct['description'] = data[len(BALISE):]
-            else :
-                ct['mt_excerpt'], ct['description'] = data.split(BALISE)
+            ct['mt_excerpt'], ct['description'] = split_excerpt( data)
 
         # Method2: input
         else :
@@ -361,8 +398,11 @@ class MyBlog():
         return ct, publish
 
     def newPost(self, useRawHTML):
-        """ Create a post from scratch. """
-        print 
+        """ Create a post from scratch.
+
+        If useRawHTML == True, read its input from STDIN
+        """
+        print
         content, publish = self._fillPost(useRawHTML)
 
         # Upload to server
@@ -378,9 +418,12 @@ class MyBlog():
             print "New post created with ID =", postid
 
     def editPost(self, id, useRawHTML):
-        """ Modify post given its ID. """
+        """ Edit a previous entry.
+
+        If useRawHTML == True, replace HTML content by STDIN one
+        """
         old_data = self._extractPost(id)
-        print 
+        print
         content, publish = self._fillPost(useRawHTML, old_data)
 
         # Upload to server
@@ -410,8 +453,8 @@ class MyBlog():
             data =  self.server.metaWeblog.getPost(
                 id, self.username, self.password
             )
-            data['formatted_text'] = "\t" + data['mt_excerpt'] +\
-                                        "\n\t" + BALISE + "\n\t" +\
+            data['formatted_text'] = data['mt_excerpt'] +\
+                                        "\n" + BALISE + "\n" +\
                                         data['description']
         except xmlrpclib.Fault as fault:
             display_XMLRPC_errors("get post content", fault)
@@ -426,7 +469,7 @@ class MyBlog():
         """Upload any type of file to the server
 
         If not given, name defaults to 'filename'.
-        The 'type' variable doesn't seem to be used.
+        The 'type' variable doesn't seem to be matter.
         """
 
         with open(filename, 'rb') as f:
@@ -458,7 +501,9 @@ class MyBlog():
         print "uploaded file type =", r['type']
 
 if __name__ == '__main__':
-    parser = OptionParser()
+    descr = "A simple script to manage entries on a remote\n"
+    descr += "DotClear2 host thanks to the XML-RPC protocol\n"
+    parser = OptionParser(description = descr)
     parser.add_option("-c", "--conf",
                       action="store", dest="configfile",
                       default=CFG_DEFAULT, metavar="FILE",
@@ -503,7 +548,8 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    # Check if we can work withtout XML-RPC connection
+    # Check if we can process option which does not required an XML-RPC
+    # connection
     if options.wrap:
         # Due to some serious pitfalls in python Unicode support
         # for stdin and stdout, trying to use a clever trick
@@ -525,8 +571,8 @@ if __name__ == '__main__':
         print output
         exit(0)
 
-    # All remaining options need a XML-RPC connection
-    # instanciate it through a MyBlog object
+    # All remaining options need an XML-RPC connection, so we
+    # instanciate it through a MyBlog object now
     myblog = MyBlog(options.configfile)
 
     if options.upload_file:
