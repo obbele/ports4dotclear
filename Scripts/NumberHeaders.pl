@@ -1,5 +1,56 @@
 #!/usr/bin/perl
 
+=pod
+
+=head1 NAME
+
+NumberHeaders.pl - Add numbering to HTML headers
+
+=head1 DESCRIPTION
+
+Add numbering to HTML headers ( C<I.a>, C<I.b>, C<II.a>, C<II.b>, etc.).
+To cope with the template used in XML-RPC/dotclear.py, skip any headers
+before the C<:: EXCERPT SEPARATOR ::>.
+
+=head1 USAGE
+
+NumberHeaders.pl reads its input from stdin and outputs the result to
+stdout. You should use it this way:
+
+	./NumberHeaders.pl <doc.xhtml >result.xhtml
+
+=head1 EXAMPLE
+
+	<h1> Introduction </h1>
+
+	<!-- :: EXCERPT SEPARATOR :: -->
+
+	<h1> Foo </h1>
+	<h2> Bar1 </h2>
+	<h3> Sub10 </h3>
+	<h2> Bar2 </h2>
+
+	<h1> Foo </h1>
+	<h2> Bar1 </h2>
+	<h2> Bar2 </h2>
+
+would become:
+
+	<h1> Introduction </h1>
+
+	<!-- :: EXCERPT SEPARATOR :: -->
+
+	<h1>I.  Foo </h1>
+	<h2>I.a.  Bar1 </h2>
+	<h3>I.a.i.  Sub10 </h3>
+	<h2>I.b.  Bar2 </h2>
+
+	<h1>II.  Foo </h1>
+	<h2>II.a.  Bar1 </h2>
+	<h2>II.b.  Bar2 </h2>
+
+=cut
+
 use strict;
 use warnings;
 
