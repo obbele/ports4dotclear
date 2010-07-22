@@ -52,7 +52,8 @@ $(XHTML): $(DOC) Makefile highlight.css
 		$(SCRIPTS)/XML-RPC/dotclear.py -w |\
 		$(SCRIPTS)/Externalize.pl |\
 		$(SCRIPTS)/NumberHeaders.pl |\
-		$(SCRIPTS)/LowerHeaders.pl >$@
+		$(SCRIPTS)/LowerHeaders.pl |\
+		$(SCRIPTS)/DOCTYPE_XHTML.pl >$@
 
 help:
 	@echo "make [all]:"
