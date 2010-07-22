@@ -35,6 +35,7 @@ import xmlrpclib, xml.dom.minidom
 import ConfigParser, datetime, getpass
 from optparse import OptionParser
 import tempfile, os, os.path, sys
+from locale import getpreferredencoding
 
 CFG_DEFAULT = "default.cfg"
 
@@ -137,7 +138,7 @@ class MyBlog():
         # Handy preferences
         self.editor = os.environ.get('EDITOR')
         if not self.editor :
-            self.editor = "/bin/vi"
+            self.editor = None
 
         try:
             self.https_warning = not config.getboolean(
@@ -239,10 +240,9 @@ class MyBlog():
 
                 #Retrieve edited text
                 with open(filename, 'rb') as f:
-                    text = f.read()
+                    doc = xml.dom.minidom.parse(f)
 
                 # Parse our XHTML file
-                doc = xml.dom.minidom.parseString(text)
                 text = doc.getElementsByTagName("body")[0].toxml()
                 text = text.replace("<body>", "").replace("</body>", "")
 
@@ -295,23 +295,26 @@ class MyBlog():
         date = datetime.datetime.strptime(post['dateCreated'].value,
                                           "%Y%m%dT%H:%M:%S")
 
-        print "-" * 72
-        print "[ {0} ] === {1} ===".format(post['postid'],
+        output = "-" * 72
+        output += "\n[ {0} ] === {1} ===".format(post['postid'],
                                            post['title'])
         if 'categories' in post :
-            print "By {0} on {1} - {2}".format( post['userid']
-                                              , date.ctime()
-                                              , post['categories'][0])
+            output += "\nBy {0} on {1} - {2}".format(
+                post['userid'], date.ctime(), post['categories'][0])
         else :
-            print "By {0} on {1}".format(post['userid'], date.ctime())
+            output += "\nBy {0} on {1}".format(
+                post['userid'], date.ctime())
 
-        print "( tags: {0} )".format(post['mt_keywords'])
-        print
-        print post['formatted_text']
-        print
-        print "Link:", post['link']
-        print "permaLink:", post['permaLink']
-        print "-" * 72
+        output += "\n( tags: {0} )".format(post['mt_keywords'])
+        output += "\n"
+        output += "\n" + post['formatted_text']
+        output += "\n"
+        output += "\nLink: " + post['link']
+        output += "\nPermaLink: " + post['permaLink']
+        output += "\n" + "-" * 72
+
+        enc = getpreferredencoding()
+        print output.encode( enc)
 
     def _fillPost(self, useRawHTML, old_data=None):
         """
@@ -334,7 +337,7 @@ class MyBlog():
                        , 'mt_keywords': None
                        , 'formatted_text': BALISE
                        , 'mt_excerpt': None
-                       , 'mt_description': None}
+                       , 'description': None}
 
         def updateField(prompt, string=None):
             if (string == None) or (string == "") :
@@ -355,14 +358,13 @@ class MyBlog():
         # Categories are not included in the struct "ct"
         # see _setCategorie()
 
-        # Get excerpt/ct
-        # Method0: stdin
+        # Get excerpt/content
+        # Method0: external XML file
         if useRawHTML:
             with open( useRawHTML, 'rb') as f:
-                data = f.read()
+                doc = xml.dom.minidom.parse(f)
             # Parse our XHTML file
-            doc = xml.dom.minidom.parseString(data)
-            text = doc.getElementsByTagName("body")[0].toxml("utf-8")
+            text = doc.getElementsByTagName("body")[0].toxml()
             #text = text.decode() # convert bytes to string
             text = text.replace("<body>", "").replace("</body>", "")
             ct['mt_excerpt'], ct['description'] = split_excerpt( text)
@@ -379,7 +381,7 @@ class MyBlog():
                 "Excerpt? (beware of xHTML tags !)\n",
                 old_data['mt_excerpt'])
             ct['description'] = updateField(
-                "Main ct? (beware of xHTML tags !)\n",
+                "Main content? (beware of xHTML tags !)\n",
                 old_data['description'])
 
         # Process the rest of the attributes (comments, pings, ...)
@@ -413,6 +415,8 @@ class MyBlog():
             )
         except xmlrpclib.Fault as fault:
             display_XMLRPC_errors("post the new entry", fault)
+            import pdb
+            pdb.set_trace()
         else :
             self._setCategorie(postid)
             print "New post created with ID =", postid
@@ -463,7 +467,10 @@ class MyBlog():
 
     def printPost(self, id):
         """ Print post content to STDOUT. """
-        print self._extractPost(id)['formatted_text']
+        enc = getpreferredencoding()
+        output = self._extractPost(id)['formatted_text']
+        print output.encode(enc)
+
 
     def uploadFile(self, filename, name="Dummy name", type="DummyType"):
         """Upload any type of file to the server
@@ -507,8 +514,7 @@ if __name__ == '__main__':
     parser.add_option("-c", "--conf",
                       action="store", dest="configfile",
                       default=CFG_DEFAULT, metavar="FILE",
-                      help="Read configuration from filename "
-                           "[default: %default]")
+                      help="Configuration name [default: %default]")
     parser.add_option("-l", "--list",
                       action="store", dest="list",
                       metavar="N",
@@ -555,8 +561,7 @@ if __name__ == '__main__':
         # for stdin and stdout, trying to use a clever trick
         # for more information, see:
         #     http://wiki.python.org/moin/PrintFails
-        import locale
-        enc = locale.getpreferredencoding()
+        enc = getpreferredencoding()
 
         input = sys.stdin.read()
 
