@@ -16,9 +16,9 @@ The script will then upload every file in the C<Media/*> directory to
 the DotClear2 blog thanks to the script Scripts/XML-RPC/dotclear.py.
 
 In return, it gets the URL of the content on the remote host (generally
-C</blog/public/example.file>) and will use it to replace every occurence
-of C<Media/example.file> by C</blog/public/example.file> in the XHTML
-document. See C<RewriteURLs.pl> for more details.
+C</blog/public/msg_name/example.file>) and will use it to replace every
+occurence of C<Media/example.file> by C</blog/public/msg_name/example.file>
+in the XHTML document. See C<RewriteURLs.pl> for more details.
 
 Once the files in C<Media/*> have been processed, the modified XHTML
 document is transmitted to DotClear2 to create a new message or edit an
@@ -41,12 +41,15 @@ use strict;
 use warnings;
 use File::Temp qw/ tempfile tmpnam /;
 use File::Copy qw/ copy move /;
+use File::Spec;
+use Cwd;
 use IPC::Open2;
 
 # Global _EVIL_ variables
 my $LOG="publish.log";
 my $XMLRPC="../Scripts/XML-RPC/dotclear.py";
 my $RWURLS="../Scripts/RewriteURLs.pl";
+my $MEDIADIR="Media";
 sub usage()
 {
 	die("Usage: $0 doc.xhtml [ConfigName]");
@@ -109,9 +112,16 @@ sub get_last_id($)
 	return $id;
 }
 
-# For each file in Media/*, 
+sub parent_directory()
+{
+	my $cwd = getcwd();
+	my @dirs = File::Spec->splitpath( $cwd);
+	return $dirs[$#dirs];
+}
+
+# For each file in $MEDIADIR/*, 
 # 	upload it
-# 	then replace its orginal url (Media/$f) by the one on the dc2 server
+# 	then replace its orginal url ($MEDIADIR/$f) by the one on the dc2 server
 # depend on the $RWURLS / RewriteURLs.pl SAX parser
 sub upload_content_and_rewrite_urls($$)
 {
@@ -121,8 +131,12 @@ sub upload_content_and_rewrite_urls($$)
 	my $publish = tmpnam();
 	copy $xhtml, $publish;
 
-	# Process each Media/* file
-	foreach my $src (glob('Media/*')) {
+	# A trick to upload filename to /blog/public/<msg_name>/foobar.jpg
+	# and not /blog/public/$MEDIADIR/foobar.jpg
+	my $parent_directory = parent_directory();
+	symlink $MEDIADIR, $parent_directory;
+
+	foreach my $src (glob("$parent_directory/*")) {
 		# 1) upload
 		my $dest;
 		open(my $pipe, "$XMLRPC --conf=$config --upload=$src |");
@@ -133,7 +147,10 @@ sub upload_content_and_rewrite_urls($$)
 		}
 		close( $pipe);
 
-		# 2) rewrite URL
+		# 2) untrick the $parent_directory
+		$src =~ s/$parent_directory/$MEDIADIR/;
+
+		# 3) rewrite URL
 		open(my $fh, "<$publish"); 			# read file
 		my ($wpipe, $rpipe);				# rewrite urls pipe
 		my ($temph, $tempname) = tempfile();# retrieve processed output
@@ -151,6 +168,9 @@ sub upload_content_and_rewrite_urls($$)
 		# replace our temporary publish file by the new rewrited one
 		move $tempname, $publish; #unlink $tempname;
 	}
+
+	# untrick the parent_directory
+	unlink $parent_directory;
 
 	# Return the name of our temporary file to be published
 	return $publish;
@@ -210,6 +230,7 @@ if (defined($ID)) {
 	close($fh);
 }
 
+# erare the temporary file inherited from upload_content_and_rewrite_urls
 unlink $rewrited;
 
 exit 0;
