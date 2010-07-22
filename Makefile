@@ -15,6 +15,9 @@ all view clean:
 		$(MAKE) -C $$dir $@;\
 	done
 
+test:
+	$(MAKE) -C Tests test
+
 help:
 	@echo "Make targets:"
 	@echo "	[all] : format all documents"
@@ -22,6 +25,7 @@ help:
 	@echo "	help  : display this help"
 	@echo "	new   : create a new directory based on $(TPL)/"
 	@echo "	view  : open all documents within a web browser"
+	@echo "	test  : try unit tests"
 	@echo ""
 
 # Simple copy and paste of $(TPL) directory
