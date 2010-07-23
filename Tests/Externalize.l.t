@@ -2,10 +2,11 @@
 
 use strict;
 use warnings;
-use Test::More tests => 3;
+use Test::More tests => 5;
+use XML::Simple;
 use Pipe2;
 
-my ($input, $output, $expected);
+my ( $input, $xml, $got, $expected );
 my $cmd = "../Scripts/Externalize.pl";
 
 #
@@ -17,19 +18,17 @@ $input = '<html><body>
 	Hello World !
 </pre>
 </body></html>';
+$expected = 'HELLO WORLD !';
 
-$expected = '<html><body>
-<pre>HELLO WORLD !</pre>
-</body></html>';
-
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "tr");
+$xml = Pipe2::pipe2( $cmd, $input );
+$got = XMLin($xml)->{body}->{pre};
+is( $got, $expected, "tr" );
 
 #
 # Sort
 #
 
-$input = '<html><body>
+$input = '<?xml version=\'1.0\'?><html><body>
 <div id="foobar" extern="sort">
 	1
 	3
@@ -38,32 +37,33 @@ $input = '<html><body>
 	2
 </div>
 </body></html>';
-
-$expected = '<html><body>
-<div id=\'foobar\'>1
+$expected = '1
 	2
 	3
 	8
 	9
-</div>
-</body></html>';
+';
 
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "sort");
+$xml = Pipe2::pipe2( $cmd, $input );
+$got = XMLin($xml)->{body}->{div};
+
+is( $got->{id},      "foobar",  "sort" );
+is( $got->{content}, $expected, "sort" );
 
 #
 # Unicode
 #
 
-$input = '<html><body>
+$input = '<?xml version=\'1.0\'?><html><body>
 <div id="foobar" extern="cat">
 	Grüße Welt !®™©
 </div>
 </body></html>';
+$expected = 'Grüße Welt !®™©';
 
-$expected = '<html><body>
-<div id=\'foobar\'>Grüße Welt !®™©</div>
-</body></html>';
+$got = Pipe2::pipe2( $cmd, $input );
+$xml = Pipe2::pipe2( $cmd, $input );
+$got = XMLin($xml)->{body}->{div};
 
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "unicode");
+is( $got->{id},      "foobar",  "unicode" );
+is( $got->{content}, $expected, "unicode" );

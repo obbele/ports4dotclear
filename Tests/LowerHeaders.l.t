@@ -5,7 +5,7 @@ use warnings;
 use Test::More tests => 3;
 use Pipe2;
 
-my ($input, $output, $expected);
+my ( $input, $output, $expected );
 my $cmd = "../Scripts/LowerHeaders.pl";
 
 #
@@ -22,8 +22,8 @@ $expected = '<html><body>
 <h4> Bar </h4>
 </body></html>';
 
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "documentation example");
+$output = Pipe2::pipe2( $cmd, $input );
+is( $output, $expected, "documentation example" );
 
 #
 # test 1
@@ -71,8 +71,8 @@ $expected = '<html><body>
 <p>titi</p>
 </body></html>';
 
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "old one");
+$output = Pipe2::pipe2( $cmd, $input );
+is( $output, $expected, "old one" );
 
 #
 # unicode
@@ -88,5 +88,5 @@ $expected = '<html><body>
 <h4> Unicode™ </h4>
 </body></html>';
 
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "unicode");
+$output = Pipe2::pipe2( $cmd, $input );
+is( $output, $expected, "unicode" );

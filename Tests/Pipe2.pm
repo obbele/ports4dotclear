@@ -3,25 +3,34 @@ package Pipe2;
 use strict;
 use warnings;
 use IPC::Open2;
+use Encode qw/ encode decode /;
 
 # Pipe $input to an external command $cmd and return the output
 # N.B.: this is a standalone function, NOT an object method !
-sub pipe2($$) {
-	my ($cmd, $input) = @_;
-	my ($hin, $hout, $pid, $output);
+sub pipe2 {
+    my ( $cmd, $input ) = @_;
+    my ( $hin, $hout, $pid, $output );
 
-	$pid = open2( $hout, $hin, $cmd);
-	print $hin $input; close $hin;
-	{
-		local $/;
-		$output = <$hout>; close $hout;
-	}
-	waitpid( $pid, 0);
-	return $output;
+    # Sending data out of Perl
+    $input = encode( 'UTF-8', $input );
+
+    $pid = open2( $hout, $hin, $cmd );
+    print $hin $input;
+    close $hin;
+    {
+        local $/;
+        $output = <$hout>;
+        close $hout;
+    }
+    waitpid( $pid, 0 );
+
+    # Process data retrieved by Perl
+    $output = decode( 'UTF-8', $output );
+
+    return $output;
 }
 
 1;
-
 
 __END__
 

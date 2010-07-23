@@ -67,27 +67,27 @@ use XML::SAX;
 use XML::SAX::Writer;
 
 sub FormatPREs {
-    my $text   = shift;
+    my $handle = shift;
     my $result = "";
 
-    my $writer = XML::SAX::Writer->new( Output => \$result, );
+    my $writer = XML::SAX::Writer->new(
+        Output     => \$result,
+        EncodeFrom => 'UTF-8',
+        EncodeTo   => 'UTF-8'
+    );
     my $filter = SAX_FormatPRE->new( Handler => $writer );
     my $parser = XML::SAX::ParserFactory->parser( Handler => $filter );
 
-    $parser->parse_string($text);
+    #$parser->parse_string($text);
+    $parser->parse_file($handle);
 
     return $result;
 }
 
 ### Main
-my $text;
-{
-    local $/;
-    $text = <>;
-    $text = encode_utf8($text);
-
-    print FormatPREs($text);
-}
+my $text = FormatPREs(*STDIN);
+$text = encode( 'UTF-8', $text );
+print $text;
 
 ##########################################################################
 ### Anonymous inline package: SAX2 filter
@@ -98,8 +98,7 @@ use IPC::Open2;
 use base qw(XML::SAX::Base);
 
 sub new {
-    my $class   = shift;
-    my %options = @_;
+    my ( $class, %options ) = @_;
 
     # Set our flag used when parsing to-be-formatted <pre> tags
     $options{"externTag"}  = undef;

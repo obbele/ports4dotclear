@@ -8,8 +8,8 @@ DOCTYPE_XHTML.pl - Prepend text with XHTML DOCTYPE declaration
 
 =head1 DESCRIPTION
 
-DOCTYPE_XHTML.pl fix the behavior of previous XML SAX filter which may
-have stripped the document from its DOCTYPE declaration..
+DOCTYPE_XHTML.pl fix the behavior of previous XML SAX filters which may
+have stripped the document from its DOCTYPE declaration.
 
 =head1 USAGE
 
@@ -23,7 +23,6 @@ stdout. You should use it this way:
 
 use strict;
 use warnings;
-
 use Encode;
 
 ### Main
@@ -31,11 +30,12 @@ my $text;
 {
     local $/;
     $text = <>;
-    $text = encode_utf8($text);
+    $text = decode( 'UTF-8', $text );
 
     print '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     print '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"' . "\n";
     print '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n";
 
+    $text = encode( 'UTF-8', $text );
     print $text;
 }

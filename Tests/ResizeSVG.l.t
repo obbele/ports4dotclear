@@ -2,21 +2,21 @@
 
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More tests => 3;
+use XML::Simple;
 use Pipe2;
 
-my ($input, $output, $expected);
+my ( $input, $xml, $got );
 my $cmd = "../Scripts/ResizeSVG.pl";
 
 #
 # test 0
 #
 
-$input = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width=\'275\' height=\'308\'/>';
+$input = '<svg width="275" height="308"/>';
 
-$expected = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width=\'100%\' viewBox=\'0 0 275 308\' height=\'100%\' />';
-
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "documentation example");
+$xml = Pipe2::pipe2( $cmd, $input );
+$got = XMLin($xml);
+is( $got->{width},   '100%',        "documentation example: width" );
+is( $got->{height},  '100%',        "documentation example: height" );
+is( $got->{viewBox}, '0 0 275 308', "documentation example: viewBox" );

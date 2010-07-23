@@ -51,27 +51,27 @@ use XML::SAX;
 use XML::SAX::Writer;
 
 sub resize_svg {
-    my ($text) = @_;
+    my $handle = shift;
     my $result = "";
 
-    my $writer = XML::SAX::Writer->new( Output => \$result, );
+    my $writer = XML::SAX::Writer->new(
+        Output     => \$result,
+        EncodeFrom => 'UTF-8',
+        EncodeTo   => 'UTF-8'
+    );
     my $filter = SAX_ResizeSVG->new( Handler => $writer );
     my $parser = XML::SAX::ParserFactory->parser( Handler => $filter );
 
-    $parser->parse_string($text);
+    $parser->parse_file($handle);
 
     return $result;
 }
 
 ### Main
-my $text;
-{
-    local $/;
-    $text = <>;
-
-    print '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . "\n";
-    print resize_svg($text);
-}
+#print '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . "\n";
+my $text = resize_svg(*STDIN);
+$text = encode( 'UTF-8', $text );
+print $text;
 
 ##########################################################################
 ### Anonymous inline package: SAX2 filter

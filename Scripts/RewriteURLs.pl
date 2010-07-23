@@ -50,27 +50,24 @@ sub RewriteURLs {
     my $result = "";
 
     my $writer = XML::SAX::Writer->new(
-        Output => \$result,
+        Output     => \$result,
+        EncodeFrom => 'UTF-8',
+        EncodeTo   => 'UTF-8',
 
         #DEST => $DEST,
     );
     my $filter = MySAXPHandler->new( Handler => $writer );
     my $parser = XML::SAX::ParserFactory->parser( Handler => $filter );
 
-    $parser->parse_string($text);
+    $parser->parse_file(*STDIN);
 
-    return $result;
+    return $result . "\n";
 }
 
 ### Main
-my $text;
-{
-    local $/;
-    $text = <>;
-    $text = encode_utf8($text);
-
-    print RewriteURLs($text);
-}
+my $text = RewriteURLs();
+$text = encode_utf8($text);
+print $text;
 
 ##########################################################################
 ### Anonymous inline package: SAX2 filter

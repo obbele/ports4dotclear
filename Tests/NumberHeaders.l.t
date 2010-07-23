@@ -5,7 +5,7 @@ use warnings;
 use Test::More tests => 4;
 use Pipe2;
 
-my ($input, $output, $expected);
+my ( $input, $output, $expected );
 my $cmd = "../Scripts/NumberHeaders.pl";
 
 #
@@ -22,8 +22,8 @@ $expected = '<html><body>
 <h2> Bar </h2>
 </body></html>';
 
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "dummy");
+$output = Pipe2::pipe2( $cmd, $input );
+is( $output, $expected, "dummy" );
 
 #
 # test 1
@@ -59,8 +59,8 @@ $expected = '<html><body>
 <h2>II.b.  Bar2 </h2>
 </body></html>';
 
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "documentation example");
+$output = Pipe2::pipe2( $cmd, $input );
+is( $output, $expected, "documentation example" );
 
 #
 # test 2
@@ -110,8 +110,8 @@ $expected = '<html><body>
 <p>titi</p>
 </body></html>';
 
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "old one");
+$output = Pipe2::pipe2( $cmd, $input );
+is( $output, $expected, "old one" );
 
 #
 # test 3
@@ -129,5 +129,5 @@ $expected = '<html><body>
 <h2>I.a.  Welt ¿? </h2>
 </body></html>';
 
-$output = Pipe2::pipe2( $cmd, $input);
-is( $output, $expected, "unicode");
+$output = Pipe2::pipe2( $cmd, $input );
+is( $output, $expected, "unicode" );
