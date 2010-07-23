@@ -10,6 +10,16 @@ TPL = Template
 
 .PHONY: clean all view help new
 
+help:
+	@echo "Make targets:"
+	@echo "	[help]: display this help"
+	@echo "	clean : remove all generated files"
+	@echo "	all   : format all documents"
+	@echo "	new   : create a new directory based on $(TPL)/"
+	@echo "	view  : open all documents within a web browser"
+	@echo "	test  : try unit tests"
+	@echo ""
+
 all view clean:
 	for dir in $(SUBDIRS);do\
 		$(MAKE) -C $$dir $@;\
@@ -17,16 +27,6 @@ all view clean:
 
 test:
 	$(MAKE) -C Tests test
-
-help:
-	@echo "Make targets:"
-	@echo "	[all] : format all documents"
-	@echo "	clean : remove all generated files"
-	@echo "	help  : display this help"
-	@echo "	new   : create a new directory based on $(TPL)/"
-	@echo "	view  : open all documents within a web browser"
-	@echo "	test  : try unit tests"
-	@echo ""
 
 # Simple copy and paste of $(TPL) directory
 # if you want to play with hardlink, this is your chance
