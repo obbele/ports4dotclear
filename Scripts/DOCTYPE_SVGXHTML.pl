@@ -32,11 +32,11 @@ my $text;
     $text = <>;
     $text = decode( 'UTF-8', $text );
 
-    print '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    print '<!DOCTYPE html PUBLIC' . "\n";
-    print '"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"' . "\n";
-    print '"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">'
-      . "\n";
+    my $doctype = '<?xml version="1.0" encoding="UTF-8"?>;
+<!DOCTYPE html PUBLIC;
+"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN";
+"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">';
+    $text =~ s{<\?xml.*<html}{$doctype\n<html};
 
     $text = encode( 'UTF-8', $text );
     print $text;
