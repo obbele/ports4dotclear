@@ -7,7 +7,6 @@
 # <http://daringfireball.net/projects/markdown/>
 #
 
-
 package Markdown;
 require 5.006_000;
 use strict;
@@ -16,19 +15,18 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use vars qw($VERSION);
 $VERSION = '1.0.1';
+
 # Tue 14 Dec 2004
 
 ## Disabled; causes problems under Perl 5.6.1:
 # use utf8;
 # binmode( STDOUT, ":utf8" );  # c.f.: http://acis.openlib.org/dev/perl-unicode-struggle.html
 
-
 #
 # Global default settings:
 #
-my $g_empty_element_suffix = " />";     # Change to ">" for HTML output
-my $g_tab_width = 4;
-
+my $g_empty_element_suffix = " />";    # Change to ">" for HTML output
+my $g_tab_width            = 4;
 
 #
 # Globals:
@@ -47,13 +45,11 @@ $g_nested_brackets = qr{
 	)*
 }x;
 
-
 # Table of hash values for escaped characters:
 my %g_escape_table;
-foreach my $char (split //, '\\`*_{}[]()>#+-.!') {
-	$g_escape_table{$char} = md5_hex($char);
+foreach my $char ( split //, '\\`*_{}[]()>#+-.!' ) {
+    $g_escape_table{$char} = md5_hex($char);
 }
-
 
 # Global hashes, used by various utility routines
 my %g_urls;
@@ -64,7 +60,6 @@ my %g_html_blocks;
 # (see _ProcessListItems() for details):
 my $g_list_level = 0;
 
-
 #### Blosxom plug-in interface ##########################################
 
 # Set $g_blosxom_use_meta to 1 to use Blosxom's meta plug-in to determine
@@ -74,213 +69,218 @@ my $g_list_level = 0;
 my $g_blosxom_use_meta = 0;
 
 sub start { 1; }
-sub story {
-	my($pkg, $path, $filename, $story_ref, $title_ref, $body_ref) = @_;
 
-	if ( (! $g_blosxom_use_meta) or
-	     (defined($meta::markup) and ($meta::markup =~ /^\s*markdown\s*$/i))
-	     ){
-			$$body_ref  = Markdown($$body_ref);
-     }
-     1;
+sub story {
+    my ( $pkg, $path, $filename, $story_ref, $title_ref, $body_ref ) = @_;
+
+    if (   ( !$g_blosxom_use_meta )
+        or
+        ( defined($meta::markup) and ( $meta::markup =~ /^\s*markdown\s*$/i ) )
+      )
+    {
+        $$body_ref = Markdown($$body_ref);
+    }
+    1;
 }
 
-
 #### Movable Type plug-in interface #####################################
-eval {require MT};  # Test to see if we're running in MT.
+eval { require MT };    # Test to see if we're running in MT.
 unless ($@) {
     require MT;
-    import  MT;
+    import MT;
     require MT::Template::Context;
-    import  MT::Template::Context;
+    import MT::Template::Context;
 
-	eval {require MT::Plugin};  # Test to see if we're running >= MT 3.0.
-	unless ($@) {
-		require MT::Plugin;
-		import  MT::Plugin;
-		my $plugin = new MT::Plugin({
-			name => "Markdown",
-			description => "A plain-text-to-HTML formatting plugin. (Version: $VERSION)",
-			doc_link => 'http://daringfireball.net/projects/markdown/'
-		});
-		MT->add_plugin( $plugin );
-	}
+    eval { require MT::Plugin };    # Test to see if we're running >= MT 3.0.
+    unless ($@) {
+        require MT::Plugin;
+        import MT::Plugin;
+        my $plugin = new MT::Plugin(
+            {
+                name => "Markdown",
+                description =>
+                  "A plain-text-to-HTML formatting plugin. (Version: $VERSION)",
+                doc_link => 'http://daringfireball.net/projects/markdown/'
+            }
+        );
+        MT->add_plugin($plugin);
+    }
 
-	MT::Template::Context->add_container_tag(MarkdownOptions => sub {
-		my $ctx	 = shift;
-		my $args = shift;
-		my $builder = $ctx->stash('builder');
-		my $tokens = $ctx->stash('tokens');
+    MT::Template::Context->add_container_tag(
+        MarkdownOptions => sub {
+            my $ctx     = shift;
+            my $args    = shift;
+            my $builder = $ctx->stash('builder');
+            my $tokens  = $ctx->stash('tokens');
 
-		if (defined ($args->{'output'}) ) {
-			$ctx->stash('markdown_output', lc $args->{'output'});
-		}
+            if ( defined( $args->{'output'} ) ) {
+                $ctx->stash( 'markdown_output', lc $args->{'output'} );
+            }
 
-		defined (my $str = $builder->build($ctx, $tokens) )
-			or return $ctx->error($builder->errstr);
-		$str;		# return value
-	});
+            defined( my $str = $builder->build( $ctx, $tokens ) )
+              or return $ctx->error( $builder->errstr );
+            $str;    # return value
+        }
+    );
 
-	MT->add_text_filter('markdown' => {
-		label     => 'Markdown',
-		docs      => 'http://daringfireball.net/projects/markdown/',
-		on_format => sub {
-			my $text = shift;
-			my $ctx  = shift;
-			my $raw  = 0;
-		    if (defined $ctx) {
-		    	my $output = $ctx->stash('markdown_output'); 
-				if (defined $output  &&  $output =~ m/^html/i) {
-					$g_empty_element_suffix = ">";
-					$ctx->stash('markdown_output', '');
-				}
-				elsif (defined $output  &&  $output eq 'raw') {
-					$raw = 1;
-					$ctx->stash('markdown_output', '');
-				}
-				else {
-					$raw = 0;
-					$g_empty_element_suffix = " />";
-				}
-			}
-			$text = $raw ? $text : Markdown($text);
-			$text;
-		},
-	});
+    MT->add_text_filter(
+        'markdown' => {
+            label     => 'Markdown',
+            docs      => 'http://daringfireball.net/projects/markdown/',
+            on_format => sub {
+                my $text = shift;
+                my $ctx  = shift;
+                my $raw  = 0;
+                if ( defined $ctx ) {
+                    my $output = $ctx->stash('markdown_output');
+                    if ( defined $output && $output =~ m/^html/i ) {
+                        $g_empty_element_suffix = ">";
+                        $ctx->stash( 'markdown_output', '' );
+                    }
+                    elsif ( defined $output && $output eq 'raw' ) {
+                        $raw = 1;
+                        $ctx->stash( 'markdown_output', '' );
+                    }
+                    else {
+                        $raw                    = 0;
+                        $g_empty_element_suffix = " />";
+                    }
+                }
+                $text = $raw ? $text : Markdown($text);
+                $text;
+            },
+        }
+    );
 
-	# If SmartyPants is loaded, add a combo Markdown/SmartyPants text filter:
-	my $smartypants;
+    # If SmartyPants is loaded, add a combo Markdown/SmartyPants text filter:
+    my $smartypants;
 
-	{
-		no warnings "once";
-		$smartypants = $MT::Template::Context::Global_filters{'smarty_pants'};
-	}
+    {
+        no warnings "once";
+        $smartypants = $MT::Template::Context::Global_filters{'smarty_pants'};
+    }
 
-	if ($smartypants) {
-		MT->add_text_filter('markdown_with_smartypants' => {
-			label     => 'Markdown With SmartyPants',
-			docs      => 'http://daringfireball.net/projects/markdown/',
-			on_format => sub {
-				my $text = shift;
-				my $ctx  = shift;
-				if (defined $ctx) {
-					my $output = $ctx->stash('markdown_output'); 
-					if (defined $output  &&  $output eq 'html') {
-						$g_empty_element_suffix = ">";
-					}
-					else {
-						$g_empty_element_suffix = " />";
-					}
-				}
-				$text = Markdown($text);
-				$text = $smartypants->($text, '1');
-			},
-		});
-	}
+    if ($smartypants) {
+        MT->add_text_filter(
+            'markdown_with_smartypants' => {
+                label     => 'Markdown With SmartyPants',
+                docs      => 'http://daringfireball.net/projects/markdown/',
+                on_format => sub {
+                    my $text = shift;
+                    my $ctx  = shift;
+                    if ( defined $ctx ) {
+                        my $output = $ctx->stash('markdown_output');
+                        if ( defined $output && $output eq 'html' ) {
+                            $g_empty_element_suffix = ">";
+                        }
+                        else {
+                            $g_empty_element_suffix = " />";
+                        }
+                    }
+                    $text = Markdown($text);
+                    $text = $smartypants->( $text, '1' );
+                },
+            }
+        );
+    }
 }
 else {
 #### BBEdit/command-line text filter interface ##########################
-# Needs to be hidden from MT (and Blosxom when running in static mode).
+    # Needs to be hidden from MT (and Blosxom when running in static mode).
 
     # We're only using $blosxom::version once; tell Perl not to warn us:
-	no warnings 'once';
+    no warnings 'once';
     unless ( defined($blosxom::version) ) {
-		use warnings;
+        use warnings;
 
-		#### Check for command-line switches: #################
-		my %cli_opts;
-		use Getopt::Long;
-		Getopt::Long::Configure('pass_through');
-		GetOptions(\%cli_opts,
-			'version',
-			'shortversion',
-			'html4tags',
-		);
-		if ($cli_opts{'version'}) {		# Version info
-			print "\nThis is Markdown, version $VERSION.\n";
-			print "Copyright 2004 John Gruber\n";
-			print "http://daringfireball.net/projects/markdown/\n\n";
-			exit 0;
-		}
-		if ($cli_opts{'shortversion'}) {		# Just the version number string.
-			print $VERSION;
-			exit 0;
-		}
-		if ($cli_opts{'html4tags'}) {			# Use HTML tag style instead of XHTML
-			$g_empty_element_suffix = ">";
-		}
+        #### Check for command-line switches: #################
+        my %cli_opts;
+        use Getopt::Long;
+        Getopt::Long::Configure('pass_through');
+        GetOptions( \%cli_opts, 'version', 'shortversion', 'html4tags', );
+        if ( $cli_opts{'version'} ) {    # Version info
+            print "\nThis is Markdown, version $VERSION.\n";
+            print "Copyright 2004 John Gruber\n";
+            print "http://daringfireball.net/projects/markdown/\n\n";
+            exit 0;
+        }
+        if ( $cli_opts{'shortversion'} ) {    # Just the version number string.
+            print $VERSION;
+            exit 0;
+        }
+        if ( $cli_opts{'html4tags'} ) {    # Use HTML tag style instead of XHTML
+            $g_empty_element_suffix = ">";
+        }
 
-
-		#### Process incoming text: ###########################
-		my $text;
-		{
-			local $/;               # Slurp the whole file
-			$text = <>;
-		}
+        #### Process incoming text: ###########################
+        my $text;
+        {
+            local $/;                      # Slurp the whole file
+            $text = <>;
+        }
         print Markdown($text);
     }
 }
 
-
-
 sub Markdown {
-#
-# Main function. The order in which other subs are called here is
-# essential. Link and image substitutions need to happen before
-# _EscapeSpecialChars(), so that any *'s or _'s in the <a>
-# and <img> tags get encoded.
-#
-	my $text = shift;
 
-	# Clear the global hashes. If we don't clear these, you get conflicts
-	# from other articles when generating a page which contains more than
-	# one article (e.g. an index page that shows the N most recent
-	# articles):
-	%g_urls = ();
-	%g_titles = ();
-	%g_html_blocks = ();
+    #
+    # Main function. The order in which other subs are called here is
+    # essential. Link and image substitutions need to happen before
+    # _EscapeSpecialChars(), so that any *'s or _'s in the <a>
+    # and <img> tags get encoded.
+    #
+    my $text = shift;
 
+    # Clear the global hashes. If we don't clear these, you get conflicts
+    # from other articles when generating a page which contains more than
+    # one article (e.g. an index page that shows the N most recent
+    # articles):
+    %g_urls        = ();
+    %g_titles      = ();
+    %g_html_blocks = ();
 
-	# Standardize line endings:
-	$text =~ s{\r\n}{\n}g; 	# DOS to Unix
-	$text =~ s{\r}{\n}g; 	# Mac to Unix
+    # Standardize line endings:
+    $text =~ s{\r\n}{\n}g;    # DOS to Unix
+    $text =~ s{\r}{\n}g;      # Mac to Unix
 
-	# Make sure $text ends with a couple of newlines:
-	$text .= "\n\n";
+    # Make sure $text ends with a couple of newlines:
+    $text .= "\n\n";
 
-	# Convert all tabs to spaces.
-	$text = _Detab($text);
+    # Convert all tabs to spaces.
+    $text = _Detab($text);
 
-	# Strip any lines consisting only of spaces and tabs.
-	# This makes subsequent regexen easier to write, because we can
-	# match consecutive blank lines with /\n+/ instead of something
-	# contorted like /[ \t]*\n+/ .
-	$text =~ s/^[ \t]+$//mg;
+    # Strip any lines consisting only of spaces and tabs.
+    # This makes subsequent regexen easier to write, because we can
+    # match consecutive blank lines with /\n+/ instead of something
+    # contorted like /[ \t]*\n+/ .
+    $text =~ s/^[ \t]+$//mg;
 
-	# Turn block-level HTML blocks into hash entries
-	$text = _HashHTMLBlocks($text);
+    # Turn block-level HTML blocks into hash entries
+    $text = _HashHTMLBlocks($text);
 
-	# Strip link definitions, store in hashes.
-	$text = _StripLinkDefinitions($text);
+    # Strip link definitions, store in hashes.
+    $text = _StripLinkDefinitions($text);
 
-	$text = _RunBlockGamut($text);
+    $text = _RunBlockGamut($text);
 
-	$text = _UnescapeSpecialChars($text);
+    $text = _UnescapeSpecialChars($text);
 
-	return $text . "\n";
+    return $text . "\n";
 }
 
-
 sub _StripLinkDefinitions {
-#
-# Strips link definitions from text, stores the URLs and titles in
-# hash references.
-#
-	my $text = shift;
-	my $less_than_tab = $g_tab_width - 1;
 
-	# Link defs are in the form: ^[id]: url "optional title"
-	while ($text =~ s{
+    #
+    # Strips link definitions from text, stores the URLs and titles in
+    # hash references.
+    #
+    my $text          = shift;
+    my $less_than_tab = $g_tab_width - 1;
+
+    # Link defs are in the form: ^[id]: url "optional title"
+    while (
+        $text =~ s{
 						^[ ]{0,$less_than_tab}\[(.+)\]:	# id = $1
 						  [ \t]*
 						  \n?				# maybe *one* newline
@@ -298,43 +298,47 @@ sub _StripLinkDefinitions {
 						)?	# title is optional
 						(?:\n+|\Z)
 					}
-					{}mx) {
-		$g_urls{lc $1} = _EncodeAmpsAndAngles( $2 );	# Link IDs are case-insensitive
-		if ($3) {
-			$g_titles{lc $1} = $3;
-			$g_titles{lc $1} =~ s/"/&quot;/g;
-		}
-	}
+					{}mx
+      )
+    {
+        $g_urls{ lc $1 } =
+          _EncodeAmpsAndAngles($2);    # Link IDs are case-insensitive
+        if ($3) {
+            $g_titles{ lc $1 } = $3;
+            $g_titles{ lc $1 } =~ s/"/&quot;/g;
+        }
+    }
 
-	return $text;
+    return $text;
 }
 
-
 sub _HashHTMLBlocks {
-	my $text = shift;
-	my $less_than_tab = $g_tab_width - 1;
+    my $text          = shift;
+    my $less_than_tab = $g_tab_width - 1;
 
-	# Hashify HTML blocks:
-	# We only want to do this for block-level HTML tags, such as headers,
-	# lists, and tables. That's because we still want to wrap <p>s around
-	# "paragraphs" that are wrapped in non-block-level tags, such as anchors,
-	# phrase emphasis, and spans. The list of tags we're looking for is
-	# hard-coded:
-	my $block_tags_a = qr/p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del/;
-	my $block_tags_b = qr/p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math/;
+    # Hashify HTML blocks:
+    # We only want to do this for block-level HTML tags, such as headers,
+    # lists, and tables. That's because we still want to wrap <p>s around
+    # "paragraphs" that are wrapped in non-block-level tags, such as anchors,
+    # phrase emphasis, and spans. The list of tags we're looking for is
+    # hard-coded:
+    my $block_tags_a =
+qr/p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del/;
+    my $block_tags_b =
+qr/p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math/;
 
-	# First, look for nested blocks, e.g.:
-	# 	<div>
-	# 		<div>
-	# 		tags for inner block must be indented.
-	# 		</div>
-	# 	</div>
-	#
-	# The outermost tags must start at the left margin for this to match, and
-	# the inner nested divs must be indented.
-	# We need to do this before the next, more liberal match, because the next
-	# match will start at the first `<div>` and stop at the first `</div>`.
-	$text =~ s{
+    # First, look for nested blocks, e.g.:
+    # 	<div>
+    # 		<div>
+    # 		tags for inner block must be indented.
+    # 		</div>
+    # 	</div>
+    #
+    # The outermost tags must start at the left margin for this to match, and
+    # the inner nested divs must be indented.
+    # We need to do this before the next, more liberal match, because the next
+    # match will start at the first `<div>` and stop at the first `</div>`.
+    $text =~ s{
 				(						# save in $1
 					^					# start of line  (with /m)
 					<($block_tags_a)	# start tag = $2
@@ -350,11 +354,10 @@ sub _HashHTMLBlocks {
 				"\n\n" . $key . "\n\n";
 			}egmx;
 
-
-	#
-	# Now match more liberally, simply from `\n<tag>` to `</tag>\n`
-	#
-	$text =~ s{
+    #
+    # Now match more liberally, simply from `\n<tag>` to `</tag>\n`
+    #
+    $text =~ s{
 				(						# save in $1
 					^					# start of line  (with /m)
 					<($block_tags_b)	# start tag = $2
@@ -369,9 +372,10 @@ sub _HashHTMLBlocks {
 				$g_html_blocks{$key} = $1;
 				"\n\n" . $key . "\n\n";
 			}egmx;
-	# Special case just for <hr />. It was easier to make a special case than
-	# to make the other regex more complicated.	
-	$text =~ s{
+
+    # Special case just for <hr />. It was easier to make a special case than
+    # to make the other regex more complicated.
+    $text =~ s{
 				(?:
 					(?<=\n\n)		# Starting after a blank line
 					|				# or
@@ -392,8 +396,8 @@ sub _HashHTMLBlocks {
 				"\n\n" . $key . "\n\n";
 			}egx;
 
-	# Special case for standalone HTML comments:
-	$text =~ s{
+    # Special case for standalone HTML comments:
+    $text =~ s{
 				(?:
 					(?<=\n\n)		# Starting after a blank line
 					|				# or
@@ -415,114 +419,118 @@ sub _HashHTMLBlocks {
 				"\n\n" . $key . "\n\n";
 			}egx;
 
-
-	return $text;
+    return $text;
 }
-
 
 sub _RunBlockGamut {
-#
-# These are all the transformations that form block-level
-# tags like paragraphs, headers, and list items.
-#
-	my $text = shift;
 
-	$text = _DoHeaders($text);
+    #
+    # These are all the transformations that form block-level
+    # tags like paragraphs, headers, and list items.
+    #
+    my $text = shift;
 
-	# Do Horizontal Rules:
-	$text =~ s{^[ ]{0,2}([ ]?\*[ ]?){3,}[ \t]*$}{\n<hr$g_empty_element_suffix\n}gmx;
-	$text =~ s{^[ ]{0,2}([ ]? -[ ]?){3,}[ \t]*$}{\n<hr$g_empty_element_suffix\n}gmx;
-	$text =~ s{^[ ]{0,2}([ ]? _[ ]?){3,}[ \t]*$}{\n<hr$g_empty_element_suffix\n}gmx;
+    $text = _DoHeaders($text);
 
-	$text = _DoLists($text);
+    # Do Horizontal Rules:
+    $text =~
+      s{^[ ]{0,2}([ ]?\*[ ]?){3,}[ \t]*$}{\n<hr$g_empty_element_suffix\n}gmx;
+    $text =~
+      s{^[ ]{0,2}([ ]? -[ ]?){3,}[ \t]*$}{\n<hr$g_empty_element_suffix\n}gmx;
+    $text =~
+      s{^[ ]{0,2}([ ]? _[ ]?){3,}[ \t]*$}{\n<hr$g_empty_element_suffix\n}gmx;
 
-	$text = _DoCodeBlocks($text);
+    $text = _DoLists($text);
 
-	$text = _DoBlockQuotes($text);
+    $text = _DoCodeBlocks($text);
 
-	# We already ran _HashHTMLBlocks() before, in Markdown(), but that
-	# was to escape raw HTML in the original Markdown source. This time,
-	# we're escaping the markup we've just created, so that we don't wrap
-	# <p> tags around block-level tags.
-	$text = _HashHTMLBlocks($text);
+    $text = _DoBlockQuotes($text);
 
-	$text = _FormParagraphs($text);
+    # We already ran _HashHTMLBlocks() before, in Markdown(), but that
+    # was to escape raw HTML in the original Markdown source. This time,
+    # we're escaping the markup we've just created, so that we don't wrap
+    # <p> tags around block-level tags.
+    $text = _HashHTMLBlocks($text);
 
-	return $text;
+    $text = _FormParagraphs($text);
+
+    return $text;
 }
-
 
 sub _RunSpanGamut {
-#
-# These are all the transformations that occur *within* block-level
-# tags like paragraphs, headers, and list items.
-#
-	my $text = shift;
 
-	$text = _DoCodeSpans($text);
+    #
+    # These are all the transformations that occur *within* block-level
+    # tags like paragraphs, headers, and list items.
+    #
+    my $text = shift;
 
-	$text = _EscapeSpecialChars($text);
+    $text = _DoCodeSpans($text);
 
-	# Process anchor and image tags. Images must come first,
-	# because ![foo][f] looks like an anchor.
-	$text = _DoImages($text);
-	$text = _DoAnchors($text);
+    $text = _EscapeSpecialChars($text);
 
-	# Make links out of things like `<http://example.com/>`
-	# Must come after _DoAnchors(), because you can use < and >
-	# delimiters in inline links like [this](<url>).
-	$text = _DoAutoLinks($text);
+    # Process anchor and image tags. Images must come first,
+    # because ![foo][f] looks like an anchor.
+    $text = _DoImages($text);
+    $text = _DoAnchors($text);
 
-	$text = _EncodeAmpsAndAngles($text);
+    # Make links out of things like `<http://example.com/>`
+    # Must come after _DoAnchors(), because you can use < and >
+    # delimiters in inline links like [this](<url>).
+    $text = _DoAutoLinks($text);
 
-	$text = _DoItalicsAndBold($text);
+    $text = _EncodeAmpsAndAngles($text);
 
-	# Do hard breaks:
-	$text =~ s/ {2,}\n/ <br$g_empty_element_suffix\n/g;
+    $text = _DoItalicsAndBold($text);
 
-	return $text;
+    # Do hard breaks:
+    $text =~ s/ {2,}\n/ <br$g_empty_element_suffix\n/g;
+
+    return $text;
 }
-
 
 sub _EscapeSpecialChars {
-	my $text = shift;
-	my $tokens ||= _TokenizeHTML($text);
+    my $text = shift;
+    my $tokens ||= _TokenizeHTML($text);
 
-	$text = '';   # rebuild $text from the tokens
-# 	my $in_pre = 0;	 # Keep track of when we're inside <pre> or <code> tags.
-# 	my $tags_to_skip = qr!<(/?)(?:pre|code|kbd|script|math)[\s>]!;
+    $text = '';    # rebuild $text from the tokens
 
-	foreach my $cur_token (@$tokens) {
-		if ($cur_token->[0] eq "tag") {
-			# Within tags, encode * and _ so they don't conflict
-			# with their use in Markdown for italics and strong.
-			# We're replacing each such character with its
-			# corresponding MD5 checksum value; this is likely
-			# overkill, but it should prevent us from colliding
-			# with the escape values by accident.
-			$cur_token->[1] =~  s! \* !$g_escape_table{'*'}!gx;
-			$cur_token->[1] =~  s! _  !$g_escape_table{'_'}!gx;
-			$text .= $cur_token->[1];
-		} else {
-			my $t = $cur_token->[1];
-			$t = _EncodeBackslashEscapes($t);
-			$text .= $t;
-		}
-	}
-	return $text;
+    # 	my $in_pre = 0;	 # Keep track of when we're inside <pre> or <code> tags.
+    # 	my $tags_to_skip = qr!<(/?)(?:pre|code|kbd|script|math)[\s>]!;
+
+    foreach my $cur_token (@$tokens) {
+        if ( $cur_token->[0] eq "tag" ) {
+
+            # Within tags, encode * and _ so they don't conflict
+            # with their use in Markdown for italics and strong.
+            # We're replacing each such character with its
+            # corresponding MD5 checksum value; this is likely
+            # overkill, but it should prevent us from colliding
+            # with the escape values by accident.
+            $cur_token->[1] =~ s! \* !$g_escape_table{'*'}!gx;
+            $cur_token->[1] =~ s! _  !$g_escape_table{'_'}!gx;
+            $text .= $cur_token->[1];
+        }
+        else {
+            my $t = $cur_token->[1];
+            $t = _EncodeBackslashEscapes($t);
+            $text .= $t;
+        }
+    }
+    return $text;
 }
 
-
 sub _DoAnchors {
-#
-# Turn Markdown link shortcuts into XHTML <a> tags.
-#
-	my $text = shift;
 
-	#
-	# First, handle reference-style links: [link text] [id]
-	#
-	$text =~ s{
+    #
+    # Turn Markdown link shortcuts into XHTML <a> tags.
+    #
+    my $text = shift;
+
+    #
+    # First, handle reference-style links: [link text] [id]
+    #
+    $text =~ s{
 		(					# wrap whole match in $1
 		  \[
 		    ($g_nested_brackets)	# link text = $2
@@ -564,10 +572,10 @@ sub _DoAnchors {
 		$result;
 	}xsge;
 
-	#
-	# Next, inline-style links: [link text](url "optional title")
-	#
-	$text =~ s{
+    #
+    # Next, inline-style links: [link text](url "optional title")
+    #
+    $text =~ s{
 		(				# wrap whole match in $1
 		  \[
 		    ($g_nested_brackets)	# link text = $2
@@ -606,20 +614,20 @@ sub _DoAnchors {
 		$result;
 	}xsge;
 
-	return $text;
+    return $text;
 }
 
-
 sub _DoImages {
-#
-# Turn Markdown image shortcuts into <img> tags.
-#
-	my $text = shift;
 
-	#
-	# First, handle reference-style labeled images: ![alt text][id]
-	#
-	$text =~ s{
+    #
+    # Turn Markdown image shortcuts into <img> tags.
+    #
+    my $text = shift;
+
+    #
+    # First, handle reference-style labeled images: ![alt text][id]
+    #
+    $text =~ s{
 		(				# wrap whole match in $1
 		  !\[
 		    (.*?)		# alt text = $2
@@ -665,11 +673,11 @@ sub _DoImages {
 		$result;
 	}xsge;
 
-	#
-	# Next, handle inline images:  ![alt text](url "optional title")
-	# Don't forget: encode * and _
+    #
+    # Next, handle inline images:  ![alt text](url "optional title")
+    # Don't forget: encode * and _
 
-	$text =~ s{
+    $text =~ s{
 		(				# wrap whole match in $1
 		  !\[
 		    (.*?)		# alt text = $2
@@ -711,37 +719,35 @@ sub _DoImages {
 		$result;
 	}xsge;
 
-	return $text;
+    return $text;
 }
 
-
 sub _DoHeaders {
-	my $text = shift;
+    my $text = shift;
 
-	# Setext-style headers:
-	#	  Header 1
-	#	  ========
-	#  
-	#	  Header 2
-	#	  --------
-	#
-	$text =~ s{ ^(.+)[ \t]*\n=+[ \t]*\n+ }{
+    # Setext-style headers:
+    #	  Header 1
+    #	  ========
+    #
+    #	  Header 2
+    #	  --------
+    #
+    $text =~ s{ ^(.+)[ \t]*\n=+[ \t]*\n+ }{
 		"<h1>"  .  _RunSpanGamut($1)  .  "</h1>\n\n";
 	}egmx;
 
-	$text =~ s{ ^(.+)[ \t]*\n-+[ \t]*\n+ }{
+    $text =~ s{ ^(.+)[ \t]*\n-+[ \t]*\n+ }{
 		"<h2>"  .  _RunSpanGamut($1)  .  "</h2>\n\n";
 	}egmx;
 
-
-	# atx-style headers:
-	#	# Header 1
-	#	## Header 2
-	#	## Header 2 with closing hashes ##
-	#	...
-	#	###### Header 6
-	#
-	$text =~ s{
+    # atx-style headers:
+    #	# Header 1
+    #	## Header 2
+    #	## Header 2 with closing hashes ##
+    #	...
+    #	###### Header 6
+    #
+    $text =~ s{
 			^(\#{1,6})	# $1 = string of #'s
 			[ \t]*
 			(.+?)		# $2 = Header text
@@ -753,24 +759,24 @@ sub _DoHeaders {
 			"<h$h_level>"  .  _RunSpanGamut($2)  .  "</h$h_level>\n\n";
 		}egmx;
 
-	return $text;
+    return $text;
 }
 
-
 sub _DoLists {
-#
-# Form HTML ordered (numbered) and unordered (bulleted) lists.
-#
-	my $text = shift;
-	my $less_than_tab = $g_tab_width - 1;
 
-	# Re-usable patterns to match list item bullets and number markers:
-	my $marker_ul  = qr/[*+-]/;
-	my $marker_ol  = qr/\d+[.]/;
-	my $marker_any = qr/(?:$marker_ul|$marker_ol)/;
+    #
+    # Form HTML ordered (numbered) and unordered (bulleted) lists.
+    #
+    my $text          = shift;
+    my $less_than_tab = $g_tab_width - 1;
 
-	# Re-usable pattern to match any entirel ul or ol list:
-	my $whole_list = qr{
+    # Re-usable patterns to match list item bullets and number markers:
+    my $marker_ul  = qr/[*+-]/;
+    my $marker_ol  = qr/\d+[.]/;
+    my $marker_any = qr/(?:$marker_ul|$marker_ol)/;
+
+    # Re-usable pattern to match any entirel ul or ol list:
+    my $whole_list = qr{
 		(								# $1 = whole list
 		  (								# $2
 			[ ]{0,$less_than_tab}
@@ -791,26 +797,26 @@ sub _DoLists {
 		)
 	}mx;
 
-	# We use a different prefix before nested lists than top-level lists.
-	# See extended comment in _ProcessListItems().
-	#
-	# Note: There's a bit of duplication here. My original implementation
-	# created a scalar regex pattern as the conditional result of the test on
-	# $g_list_level, and then only ran the $text =~ s{...}{...}egmx
-	# substitution once, using the scalar as the pattern. This worked,
-	# everywhere except when running under MT on my hosting account at Pair
-	# Networks. There, this caused all rebuilds to be killed by the reaper (or
-	# perhaps they crashed, but that seems incredibly unlikely given that the
-	# same script on the same server ran fine *except* under MT. I've spent
-	# more time trying to figure out why this is happening than I'd like to
-	# admit. My only guess, backed up by the fact that this workaround works,
-	# is that Perl optimizes the substition when it can figure out that the
-	# pattern will never change, and when this optimization isn't on, we run
-	# afoul of the reaper. Thus, the slightly redundant code to that uses two
-	# static s/// patterns rather than one conditional pattern.
+    # We use a different prefix before nested lists than top-level lists.
+    # See extended comment in _ProcessListItems().
+    #
+    # Note: There's a bit of duplication here. My original implementation
+    # created a scalar regex pattern as the conditional result of the test on
+    # $g_list_level, and then only ran the $text =~ s{...}{...}egmx
+    # substitution once, using the scalar as the pattern. This worked,
+    # everywhere except when running under MT on my hosting account at Pair
+    # Networks. There, this caused all rebuilds to be killed by the reaper (or
+    # perhaps they crashed, but that seems incredibly unlikely given that the
+    # same script on the same server ran fine *except* under MT. I've spent
+    # more time trying to figure out why this is happening than I'd like to
+    # admit. My only guess, backed up by the fact that this workaround works,
+    # is that Perl optimizes the substition when it can figure out that the
+    # pattern will never change, and when this optimization isn't on, we run
+    # afoul of the reaper. Thus, the slightly redundant code to that uses two
+    # static s/// patterns rather than one conditional pattern.
 
-	if ($g_list_level) {
-		$text =~ s{
+    if ($g_list_level) {
+        $text =~ s{
 				^
 				$whole_list
 			}{
@@ -823,9 +829,9 @@ sub _DoLists {
 				$result = "<$list_type>\n" . $result . "</$list_type>\n";
 				$result;
 			}egmx;
-	}
-	else {
-		$text =~ s{
+    }
+    else {
+        $text =~ s{
 				(?:(?<=\n\n)|\A\n?)
 				$whole_list
 			}{
@@ -838,51 +844,48 @@ sub _DoLists {
 				$result = "<$list_type>\n" . $result . "</$list_type>\n";
 				$result;
 			}egmx;
-	}
+    }
 
-
-	return $text;
+    return $text;
 }
 
-
 sub _ProcessListItems {
-#
-#	Process the contents of a single ordered or unordered list, splitting it
-#	into individual list items.
-#
 
-	my $list_str = shift;
-	my $marker_any = shift;
+    #
+    #	Process the contents of a single ordered or unordered list, splitting it
+    #	into individual list items.
+    #
 
+    my $list_str   = shift;
+    my $marker_any = shift;
 
-	# The $g_list_level global keeps track of when we're inside a list.
-	# Each time we enter a list, we increment it; when we leave a list,
-	# we decrement. If it's zero, we're not in a list anymore.
-	#
-	# We do this because when we're not inside a list, we want to treat
-	# something like this:
-	#
-	#		I recommend upgrading to version
-	#		8. Oops, now this line is treated
-	#		as a sub-list.
-	#
-	# As a single paragraph, despite the fact that the second line starts
-	# with a digit-period-space sequence.
-	#
-	# Whereas when we're inside a list (or sub-list), that line will be
-	# treated as the start of a sub-list. What a kludge, huh? This is
-	# an aspect of Markdown's syntax that's hard to parse perfectly
-	# without resorting to mind-reading. Perhaps the solution is to
-	# change the syntax rules such that sub-lists must start with a
-	# starting cardinal number; e.g. "1." or "a.".
+    # The $g_list_level global keeps track of when we're inside a list.
+    # Each time we enter a list, we increment it; when we leave a list,
+    # we decrement. If it's zero, we're not in a list anymore.
+    #
+    # We do this because when we're not inside a list, we want to treat
+    # something like this:
+    #
+    #		I recommend upgrading to version
+    #		8. Oops, now this line is treated
+    #		as a sub-list.
+    #
+    # As a single paragraph, despite the fact that the second line starts
+    # with a digit-period-space sequence.
+    #
+    # Whereas when we're inside a list (or sub-list), that line will be
+    # treated as the start of a sub-list. What a kludge, huh? This is
+    # an aspect of Markdown's syntax that's hard to parse perfectly
+    # without resorting to mind-reading. Perhaps the solution is to
+    # change the syntax rules such that sub-lists must start with a
+    # starting cardinal number; e.g. "1." or "a.".
 
-	$g_list_level++;
+    $g_list_level++;
 
-	# trim trailing blank lines:
-	$list_str =~ s/\n{2,}\z/\n/;
+    # trim trailing blank lines:
+    $list_str =~ s/\n{2,}\z/\n/;
 
-
-	$list_str =~ s{
+    $list_str =~ s{
 		(\n)?							# leading line = $1
 		(^[ \t]*)						# leading whitespace = $2
 		($marker_any) [ \t]+			# list marker = $3
@@ -907,20 +910,19 @@ sub _ProcessListItems {
 		"<li>" . $item . "</li>\n";
 	}egmx;
 
-	$g_list_level--;
-	return $list_str;
+    $g_list_level--;
+    return $list_str;
 }
 
-
-
 sub _DoCodeBlocks {
-#
-#	Process Markdown `<pre><code>` blocks.
-#	
 
-	my $text = shift;
+    #
+    #	Process Markdown `<pre><code>` blocks.
+    #
 
-	$text =~ s{
+    my $text = shift;
+
+    $text =~ s{
 			(?:\n\n|\A)
 			(	            # $1 = the code block -- one or more lines, starting with a space/tab
 			  (?:
@@ -943,39 +945,39 @@ sub _DoCodeBlocks {
 			$result;
 		}egmx;
 
-	return $text;
+    return $text;
 }
 
-
 sub _DoCodeSpans {
-#
-# 	*	Backtick quotes are used for <code></code> spans.
-# 
-# 	*	You can use multiple backticks as the delimiters if you want to
-# 		include literal backticks in the code span. So, this input:
-#     
-#         Just type ``foo `bar` baz`` at the prompt.
-#     
-#     	Will translate to:
-#     
-#         <p>Just type <code>foo `bar` baz</code> at the prompt.</p>
-#     
-#		There's no arbitrary limit to the number of backticks you
-#		can use as delimters. If you need three consecutive backticks
-#		in your code, use four for delimiters, etc.
-#
-#	*	You can use spaces to get literal backticks at the edges:
-#     
-#         ... type `` `bar` `` ...
-#     
-#     	Turns to:
-#     
-#         ... type <code>`bar`</code> ...
-#
 
-	my $text = shift;
+    #
+    # 	*	Backtick quotes are used for <code></code> spans.
+    #
+    # 	*	You can use multiple backticks as the delimiters if you want to
+    # 		include literal backticks in the code span. So, this input:
+    #
+    #         Just type ``foo `bar` baz`` at the prompt.
+    #
+    #     	Will translate to:
+    #
+    #         <p>Just type <code>foo `bar` baz</code> at the prompt.</p>
+    #
+    #		There's no arbitrary limit to the number of backticks you
+    #		can use as delimters. If you need three consecutive backticks
+    #		in your code, use four for delimiters, etc.
+    #
+    #	*	You can use spaces to get literal backticks at the edges:
+    #
+    #         ... type `` `bar` `` ...
+    #
+    #     	Turns to:
+    #
+    #         ... type <code>`bar`</code> ...
+    #
 
-	$text =~ s@
+    my $text = shift;
+
+    $text =~ s@
 			(`+)		# $1 = Opening run of `
 			(.+?)		# $2 = The code block
 			(?<!`)
@@ -989,67 +991,64 @@ sub _DoCodeSpans {
 			"<code>$c</code>";
 		@egsx;
 
-	return $text;
+    return $text;
 }
-
 
 sub _EncodeCode {
-#
-# Encode/escape certain characters inside Markdown code runs.
-# The point is that in code, these characters are literals,
-# and lose their special Markdown meanings.
-#
+
+    #
+    # Encode/escape certain characters inside Markdown code runs.
+    # The point is that in code, these characters are literals,
+    # and lose their special Markdown meanings.
+    #
     local $_ = shift;
 
-	# Encode all ampersands; HTML entities are not
-	# entities within a Markdown code span.
-	s/&/&amp;/g;
+    # Encode all ampersands; HTML entities are not
+    # entities within a Markdown code span.
+    s/&/&amp;/g;
 
-	# Encode $'s, but only if we're running under Blosxom.
-	# (Blosxom interpolates Perl variables in article bodies.)
-	{
-		no warnings 'once';
-    	if (defined($blosxom::version)) {
-    		s/\$/&#036;/g;	
-    	}
+    # Encode $'s, but only if we're running under Blosxom.
+    # (Blosxom interpolates Perl variables in article bodies.)
+    {
+        no warnings 'once';
+        if ( defined($blosxom::version) ) {
+            s/\$/&#036;/g;
+        }
     }
 
+    # Do the angle bracket song and dance:
+    s! <  !&lt;!gx;
+    s! >  !&gt;!gx;
 
-	# Do the angle bracket song and dance:
-	s! <  !&lt;!gx;
-	s! >  !&gt;!gx;
+    # Now, escape characters that are magic in Markdown:
+    s! \* !$g_escape_table{'*'}!gx;
+    s! _  !$g_escape_table{'_'}!gx;
+    s! {  !$g_escape_table{'{'}!gx;
+    s! }  !$g_escape_table{'}'}!gx;
+    s! \[ !$g_escape_table{'['}!gx;
+    s! \] !$g_escape_table{']'}!gx;
+    s! \\ !$g_escape_table{'\\'}!gx;
 
-	# Now, escape characters that are magic in Markdown:
-	s! \* !$g_escape_table{'*'}!gx;
-	s! _  !$g_escape_table{'_'}!gx;
-	s! {  !$g_escape_table{'{'}!gx;
-	s! }  !$g_escape_table{'}'}!gx;
-	s! \[ !$g_escape_table{'['}!gx;
-	s! \] !$g_escape_table{']'}!gx;
-	s! \\ !$g_escape_table{'\\'}!gx;
-
-	return $_;
+    return $_;
 }
-
 
 sub _DoItalicsAndBold {
-	my $text = shift;
+    my $text = shift;
 
-	# <strong> must go first:
-	$text =~ s{ (\*\*|__) (?=\S) (.+?[*_]*) (?<=\S) \1 }
+    # <strong> must go first:
+    $text =~ s{ (\*\*|__) (?=\S) (.+?[*_]*) (?<=\S) \1 }
 		{<strong>$2</strong>}gsx;
 
-	$text =~ s{ (\*|_) (?=\S) (.+?) (?<=\S) \1 }
+    $text =~ s{ (\*|_) (?=\S) (.+?) (?<=\S) \1 }
 		{<em>$2</em>}gsx;
 
-	return $text;
+    return $text;
 }
 
-
 sub _DoBlockQuotes {
-	my $text = shift;
+    my $text = shift;
 
-	$text =~ s{
+    $text =~ s{
 		  (								# Wrap whole match in $1
 			(
 			  ^[ \t]*>[ \t]?			# '>' at the start of a line
@@ -1077,73 +1076,73 @@ sub _DoBlockQuotes {
 			"<blockquote>\n$bq\n</blockquote>\n\n";
 		}egmx;
 
-
-	return $text;
+    return $text;
 }
-
 
 sub _FormParagraphs {
-#
-#	Params:
-#		$text - string to process with html <p> tags
-#
-	my $text = shift;
 
-	# Strip leading and trailing lines:
-	$text =~ s/\A\n+//;
-	$text =~ s/\n+\z//;
+    #
+    #	Params:
+    #		$text - string to process with html <p> tags
+    #
+    my $text = shift;
 
-	my @grafs = split(/\n{2,}/, $text);
+    # Strip leading and trailing lines:
+    $text =~ s/\A\n+//;
+    $text =~ s/\n+\z//;
 
-	#
-	# Wrap <p> tags.
-	#
-	foreach (@grafs) {
-		unless (defined( $g_html_blocks{$_} )) {
-			$_ = _RunSpanGamut($_);
-			s/^([ \t]*)/<p>/;
-			$_ .= "</p>";
-		}
-	}
+    my @grafs = split( /\n{2,}/, $text );
 
-	#
-	# Unhashify HTML blocks
-	#
-	foreach (@grafs) {
-		if (defined( $g_html_blocks{$_} )) {
-			$_ = $g_html_blocks{$_};
-		}
-	}
+    #
+    # Wrap <p> tags.
+    #
+    foreach (@grafs) {
+        unless ( defined( $g_html_blocks{$_} ) ) {
+            $_ = _RunSpanGamut($_);
+            s/^([ \t]*)/<p>/;
+            $_ .= "</p>";
+        }
+    }
 
-	return join "\n\n", @grafs;
+    #
+    # Unhashify HTML blocks
+    #
+    foreach (@grafs) {
+        if ( defined( $g_html_blocks{$_} ) ) {
+            $_ = $g_html_blocks{$_};
+        }
+    }
+
+    return join "\n\n", @grafs;
 }
-
 
 sub _EncodeAmpsAndAngles {
-# Smart processing for ampersands and angle brackets that need to be encoded.
 
-	my $text = shift;
+   # Smart processing for ampersands and angle brackets that need to be encoded.
 
-	# Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
-	#   http://bumppo.net/projects/amputator/
- 	$text =~ s/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/&amp;/g;
+    my $text = shift;
 
-	# Encode naked <'s
- 	$text =~ s{<(?![a-z/?\$!])}{&lt;}gi;
+    # Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
+    #   http://bumppo.net/projects/amputator/
+    $text =~ s/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/&amp;/g;
 
-	return $text;
+    # Encode naked <'s
+    $text =~ s{<(?![a-z/?\$!])}{&lt;}gi;
+
+    return $text;
 }
 
-
 sub _EncodeBackslashEscapes {
-#
-#   Parameter:  String.
-#   Returns:    The string, with after processing the following backslash
-#               escape sequences.
-#
+
+    #
+    #   Parameter:  String.
+    #   Returns:    The string, with after processing the following backslash
+    #               escape sequences.
+    #
     local $_ = shift;
 
-    s! \\\\  !$g_escape_table{'\\'}!gx;		# Must process escaped backslashes first.
+    s! \\\\  !$g_escape_table{'\\'}!gx
+      ;    # Must process escaped backslashes first.
     s! \\`   !$g_escape_table{'`'}!gx;
     s! \\\*  !$g_escape_table{'*'}!gx;
     s! \\_   !$g_escape_table{'_'}!gx;
@@ -1163,14 +1162,13 @@ sub _EncodeBackslashEscapes {
     return $_;
 }
 
-
 sub _DoAutoLinks {
-	my $text = shift;
+    my $text = shift;
 
-	$text =~ s{<((https?|ftp):[^'">\s]+)>}{<a href="$1">$1</a>}gi;
+    $text =~ s{<((https?|ftp):[^'">\s]+)>}{<a href="$1">$1</a>}gi;
 
-	# Email addresses: <address@domain.foo>
-	$text =~ s{
+    # Email addresses: <address@domain.foo>
+    $text =~ s{
 		<
         (?:mailto:)?
 		(
@@ -1183,11 +1181,11 @@ sub _DoAutoLinks {
 		_EncodeEmailAddress( _UnescapeSpecialChars($1) );
 	}egix;
 
-	return $text;
+    return $text;
 }
 
-
 sub _EncodeEmailAddress {
+
 #
 #	Input: an email address, e.g. "foo@example.com"
 #
@@ -1203,18 +1201,18 @@ sub _EncodeEmailAddress {
 #	mailing list: <http://tinyurl.com/yu7ue>
 #
 
-	my $addr = shift;
+    my $addr = shift;
 
-	srand;
-	my @encode = (
-		sub { '&#' .                 ord(shift)   . ';' },
-		sub { '&#x' . sprintf( "%X", ord(shift) ) . ';' },
-		sub {                            shift          },
-	);
+    srand;
+    my @encode = (
+        sub { '&#' . ord(shift) . ';' },
+        sub { '&#x' . sprintf( "%X", ord(shift) ) . ';' },
+        sub { shift },
+    );
 
-	$addr = "mailto:" . $addr;
+    $addr = "mailto:" . $addr;
 
-	$addr =~ s{(.)}{
+    $addr =~ s{(.)}{
 		my $char = $1;
 		if ( $char eq '@' ) {
 			# this *must* be encoded. I insist.
@@ -1232,40 +1230,40 @@ sub _EncodeEmailAddress {
 		$char;
 	}gex;
 
-	$addr = qq{<a href="$addr">$addr</a>};
-	$addr =~ s{">.+?:}{">}; # strip the mailto: from the visible part
+    $addr = qq{<a href="$addr">$addr</a>};
+    $addr =~ s{">.+?:}{">};    # strip the mailto: from the visible part
 
-	return $addr;
+    return $addr;
 }
 
-
 sub _UnescapeSpecialChars {
-#
-# Swap back in all the special characters we've hidden.
-#
-	my $text = shift;
 
-	while( my($char, $hash) = each(%g_escape_table) ) {
-		$text =~ s/$hash/$char/g;
-	}
+    #
+    # Swap back in all the special characters we've hidden.
+    #
+    my $text = shift;
+
+    while ( my ( $char, $hash ) = each(%g_escape_table) ) {
+        $text =~ s/$hash/$char/g;
+    }
     return $text;
 }
 
-
 sub _TokenizeHTML {
-#
-#   Parameter:  String containing HTML markup.
-#   Returns:    Reference to an array of the tokens comprising the input
-#               string. Each token is either a tag (possibly with nested,
-#               tags contained therein, such as <a href="<MTFoo>">, or a
-#               run of text between tags. Each element of the array is a
-#               two-element array; the first is either 'tag' or 'text';
-#               the second is the actual value.
-#
-#
-#   Derived from the _tokenize() subroutine from Brad Choate's MTRegex plugin.
-#       <http://www.bradchoate.com/past/mtregex.php>
-#
+
+  #
+  #   Parameter:  String containing HTML markup.
+  #   Returns:    Reference to an array of the tokens comprising the input
+  #               string. Each token is either a tag (possibly with nested,
+  #               tags contained therein, such as <a href="<MTFoo>">, or a
+  #               run of text between tags. Each element of the array is a
+  #               two-element array; the first is either 'tag' or 'text';
+  #               the second is the actual value.
+  #
+  #
+  #   Derived from the _tokenize() subroutine from Brad Choate's MTRegex plugin.
+  #       <http://www.bradchoate.com/past/mtregex.php>
+  #
 
     my $str = shift;
     my $pos = 0;
@@ -1273,48 +1271,49 @@ sub _TokenizeHTML {
     my @tokens;
 
     my $depth = 6;
-    my $nested_tags = join('|', ('(?:<[a-z/!$](?:[^<>]') x $depth) . (')*>)' x  $depth);
+    my $nested_tags =
+      join( '|', ('(?:<[a-z/!$](?:[^<>]') x $depth ) . ( ')*>)' x $depth );
     my $match = qr/(?s: <! ( -- .*? -- \s* )+ > ) |  # comment
                    (?s: <\? .*? \?> ) |              # processing instruction
-                   $nested_tags/ix;                   # nested tags
+                   $nested_tags/ix;    # nested tags
 
-    while ($str =~ m/($match)/g) {
+    while ( $str =~ m/($match)/g ) {
         my $whole_tag = $1;
         my $sec_start = pos $str;
         my $tag_start = $sec_start - length $whole_tag;
-        if ($pos < $tag_start) {
-            push @tokens, ['text', substr($str, $pos, $tag_start - $pos)];
+        if ( $pos < $tag_start ) {
+            push @tokens, [ 'text', substr( $str, $pos, $tag_start - $pos ) ];
         }
-        push @tokens, ['tag', $whole_tag];
+        push @tokens, [ 'tag', $whole_tag ];
         $pos = pos $str;
     }
-    push @tokens, ['text', substr($str, $pos, $len - $pos)] if $pos < $len;
+    push @tokens, [ 'text', substr( $str, $pos, $len - $pos ) ] if $pos < $len;
     \@tokens;
 }
 
-
 sub _Outdent {
-#
-# Remove one level of line-leading tabs or spaces
-#
-	my $text = shift;
 
-	$text =~ s/^(\t|[ ]{1,$g_tab_width})//gm;
-	return $text;
+    #
+    # Remove one level of line-leading tabs or spaces
+    #
+    my $text = shift;
+
+    $text =~ s/^(\t|[ ]{1,$g_tab_width})//gm;
+    return $text;
 }
-
 
 sub _Detab {
-#
-# Cribbed from a post by Bart Lateur:
-# <http://www.nntp.perl.org/group/perl.macperl.anyperl/154>
-#
-	my $text = shift;
 
-	$text =~ s{(.*?)\t}{$1.(' ' x ($g_tab_width - length($1) % $g_tab_width))}ge;
-	return $text;
+    #
+    # Cribbed from a post by Bart Lateur:
+    # <http://www.nntp.perl.org/group/perl.macperl.anyperl/154>
+    #
+    my $text = shift;
+
+    $text =~
+      s{(.*?)\t}{$1.(' ' x ($g_tab_width - length($1) % $g_tab_width))}ge;
+    return $text;
 }
-
 
 1;
 

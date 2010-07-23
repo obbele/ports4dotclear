@@ -28,31 +28,31 @@ use Encode;
 use XML::SAX;
 use XML::SAX::Writer;
 
-sub InlineSVG
-{
-	my $text = shift;
-	my $result = "";
+sub InlineSVG {
+    my $text   = shift;
+    my $result = "";
 
-	my $writer = XML::SAX::Writer->new(
-		Output => \$result,
-		#DEST => $DEST,
-	);
-	my $filter = MySAXPHandler->new(Handler => $writer);
-	my $parser = XML::SAX::ParserFactory->parser(Handler => $filter);
+    my $writer = XML::SAX::Writer->new(
+        Output => \$result,
 
-	$parser->parse_string( $text);
+        #DEST => $DEST,
+    );
+    my $filter = MySAXPHandler->new( Handler => $writer );
+    my $parser = XML::SAX::ParserFactory->parser( Handler => $filter );
 
-	return $result;
+    $parser->parse_string($text);
+
+    return $result;
 }
 
 ### Main
 my $text;
 {
-	local $/;
-	$text = <>;
-	$text = encode_utf8($text);
+    local $/;
+    $text = <>;
+    $text = encode_utf8($text);
 
-	print InlineSVG($text);
+    print InlineSVG($text);
 }
 
 ##########################################################################
@@ -64,30 +64,32 @@ use IPC::Open2;
 use base qw(XML::SAX::Base);
 
 sub new {
-	my $class = shift;
-	my %options = @_;
+    my $class   = shift;
+    my %options = @_;
 
-	return bless \%options, $class;
+    return bless \%options, $class;
 }
 
 sub start_element {
-	my ($self, $data) = @_;
+    my ( $self, $data ) = @_;
 
-	if ($data->{Prefix} eq '') {
-		$data->{Prefix} = 'svg';
-		$data->{Name} = 'svg:'.$data->{Name};
-	}
-	# print opening tag <name>
-	$self->SUPER::start_element($data);
+    if ( $data->{Prefix} eq '' ) {
+        $data->{Prefix} = 'svg';
+        $data->{Name}   = 'svg:' . $data->{Name};
+    }
+
+    # print opening tag <name>
+    $self->SUPER::start_element($data);
 }
 
 sub end_element {
-	my ($self, $data) = @_;
+    my ( $self, $data ) = @_;
 
-	if ($data->{Prefix} eq '') {
-		$data->{Prefix} = 'svg';
-		$data->{Name} = 'svg:'.$data->{Name};
-	}
-	# print opening tag <name>
-	$self->SUPER::end_element($data);
+    if ( $data->{Prefix} eq '' ) {
+        $data->{Prefix} = 'svg';
+        $data->{Name}   = 'svg:' . $data->{Name};
+    }
+
+    # print opening tag <name>
+    $self->SUPER::end_element($data);
 }

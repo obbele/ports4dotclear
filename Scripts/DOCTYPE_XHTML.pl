@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+
 =pod
 
 =head1 NAME
@@ -28,13 +29,13 @@ use Encode;
 ### Main
 my $text;
 {
-	local $/;
-	$text = <>;
-	$text = encode_utf8($text);
+    local $/;
+    $text = <>;
+    $text = encode_utf8($text);
 
-	print '<?xml version="1.0" encoding="UTF-8"?>'."\n";
-	print '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"'."\n";
-	print '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'."\n";
+    print '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    print '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"' . "\n";
+    print '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n";
 
-	print $text;
+    print $text;
 }
