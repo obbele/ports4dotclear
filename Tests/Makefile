@@ -1,14 +1,9 @@
 TESTS = $(wildcard *.l.t)
 
 .PHONY: test force help
-test: $(TESTS)
 
-FORCE:
-
-%.l.t: FORCE
-	@echo "[$@]"
-	@perl $@
-	@echo
+test:
+	perl harness.pl
 
 force:
 	for t in $(TESTS);do\
@@ -18,6 +13,6 @@ force:
 	done
 
 help:
-	@echo "make help  : display this message"
-	@echo "make [all] : run all tests, stopping if any errors are spotted"
-	@echo "make force : run all tests, would they fail or naugh"
+	@echo "make help   : display this message"
+	@echo "make [test] : run all tests, stopping if any errors are spotted"
+	@echo "make force  : run all tests, would they fail or naugh"
