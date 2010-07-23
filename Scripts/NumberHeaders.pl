@@ -54,7 +54,7 @@ would become:
 use strict;
 use warnings;
 
-sub EnumerateHeaders($)
+sub EnumerateHeaders
 {
 	my $text = shift;
 	my @lines = split (/\n/, $text);

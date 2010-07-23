@@ -45,7 +45,7 @@ unless (defined($SRC) && defined($DEST)) {
 	die("Usage: $0 source_url destination_url");
 }
 
-sub RewriteURLs($)
+sub RewriteURLs
 {
 	my $text = shift;
 	my $result = "";

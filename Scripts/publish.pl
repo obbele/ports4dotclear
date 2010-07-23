@@ -50,18 +50,18 @@ my $LOG="publish.log";
 my $XMLRPC="../Scripts/XML-RPC/dotclear.py";
 my $RWURLS="../Scripts/RewriteURLs.pl";
 my $MEDIADIR="Media";
-sub usage()
+sub usage
 {
 	die("Usage: $0 doc.xhtml [ConfigName]");
 }
 
 # Read the $LOG file, extract last line and print the first field
 # which should be the name of the last configuration file
-sub get_last_config()
+sub get_last_config
 {
 	my $line;
 
-	open( my $fh, "<$LOG");
+	open( my $fh, '<', "$LOG");
 	while (<$fh>) { 
 		$line = $_ unless /^#/;
 	}
@@ -80,12 +80,12 @@ sub get_last_config()
 }
 
 # get the msg ID corresponding to the given configuration name
-sub get_msg_id($)
+sub get_msg_id
 {
 	my ($config) = @_;
 	my $id;
 
-	open( my $fh, "<$LOG");
+	open( my $fh, '<', "$LOG");
 	while (<$fh>) { 
 		if (/^$config/) {
 			my @elems = split;
@@ -97,11 +97,11 @@ sub get_msg_id($)
 	return $id;
 }
 
-sub get_last_id($)
+sub get_last_id
 {
 	my ($config) = @_;
 	my $id;
-	open(my $pipe, "$XMLRPC --conf=$config --list=1 |");
+	open(my $pipe, '-|', "$XMLRPC --conf=$config --list=1");
 	while (<$pipe>) {
 		if (/^([[:digit:]]+)/) {
 			$id = $1;
@@ -112,7 +112,7 @@ sub get_last_id($)
 	return $id;
 }
 
-sub parent_directory()
+sub parent_directory
 {
 	my $cwd = getcwd();
 	my @dirs = File::Spec->splitpath( $cwd);
@@ -123,7 +123,7 @@ sub parent_directory()
 # 	upload it
 # 	then replace its orginal url ($MEDIADIR/$f) by the one on the dc2 server
 # depend on the $RWURLS / RewriteURLs.pl SAX parser
-sub upload_content_and_rewrite_urls($$)
+sub upload_content_and_rewrite_urls
 {
 	my ($config, $xhtml) = @_;
 
@@ -139,7 +139,7 @@ sub upload_content_and_rewrite_urls($$)
 	foreach my $src (glob("$parent_directory/*")) {
 		# 1) upload
 		my $dest;
-		open(my $pipe, "$XMLRPC --conf=$config --upload=$src |");
+		open(my $pipe, '-|', "$XMLRPC --conf=$config --upload=$src");
 		while(<$pipe>) {
 			if (/file url = (.*)/) {
 				$dest = $1;
@@ -151,7 +151,7 @@ sub upload_content_and_rewrite_urls($$)
 		$src =~ s/$parent_directory/$MEDIADIR/;
 
 		# 3) rewrite URL
-		open(my $fh, "<$publish"); 			# read file
+		open(my $fh, '<', "$publish"); 			# read file
 		my ($wpipe, $rpipe);				# rewrite urls pipe
 		my ($temph, $tempname) = tempfile();# retrieve processed output
 		print "replacing \"$src\" by \"$dest\" in tempfile [$tempname]\n";
@@ -177,7 +177,7 @@ sub upload_content_and_rewrite_urls($$)
 }
 
 # Replace previous date by present one
-sub update_publish_date($$)
+sub update_publish_date
 {
 	my ($config, $id) = @_;
 
@@ -185,8 +185,8 @@ sub update_publish_date($$)
 	my $temp = tmpnam();
 	copy $LOG, $temp;
 
-	open(my $input, "<$temp");
-	open(my $output, ">$LOG");
+	open(my $input, '<', "$temp");
+	open(my $output, '>', "$LOG");
 	while(<$input>) {
 		if (/^$config\s*$id\s*([0-9-]*)/) {
 			my $first_date = $1;
@@ -225,7 +225,7 @@ if (defined($ID)) {
 
 	my $last_id = get_last_id($CONFIG);
 	chomp( my $date = `date +%Y-%m-%d`);
-	open(my $fh, ">>$LOG") or die $!;
+	open(my $fh, '>>', "$LOG") or die $!;
 	print $fh "$CONFIG\t$last_id\t$date\t$date\n";
 	close($fh);
 }

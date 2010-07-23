@@ -28,7 +28,7 @@ use Encode;
 use XML::SAX;
 use XML::SAX::Writer;
 
-sub InlineSVG($)
+sub InlineSVG
 {
 	my $text = shift;
 	my $result = "";

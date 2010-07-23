@@ -54,7 +54,7 @@ would become:
 use strict;
 use warnings;
 
-sub DownHeaders($)
+sub DownHeaders
 {
 	my $text = shift;
 

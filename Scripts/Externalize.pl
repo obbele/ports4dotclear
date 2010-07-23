@@ -65,7 +65,7 @@ use Encode;
 use XML::SAX;
 use XML::SAX::Writer;
 
-sub FormatPREs($)
+sub FormatPREs
 {
 	my $text = shift;
 	my $result = "";
