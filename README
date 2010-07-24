@@ -6,23 +6,4 @@ Requirement:
 
 You will have to manually create configuration files in Scripts/XML-RPC.
 See Scripts/XML-RPC/default.cfg for example.
-
-TODO:
-	test framework
-		- publish.pl
-		- unicode in tags / raw_input
-	allow to use a diferent directory than 'Media/*'
-	clean XML-RPC/dotclear.py code about encode/decode('utf-8')
-	clean XML-RPC/dotclear.py code about 'with open'
-	(GitHub) README file
-		point to documentation
-		point to unit test
-			and their configuration / lighty spawn
-
-Dotclear2 XML-RPC playground
-	TODO
-		Manage comments
-		Synchronise comments between the wave and the blogs ?
-		:by adding each blog comment to the wave
-
 ; vim:ft=vo_base:
