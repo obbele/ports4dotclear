@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use File::Temp qw/ tempfile /;
-use Test::More;    # tests => 3;
+use Test::More tests => 21;
 use Pipe2;
 
 my ( $input, $output, $expected );
@@ -229,4 +229,4 @@ unlink $tempname;
 $output = Pipe2::pipe2( "$cmd -l3", '' );
 is( $output, $original_state, "original state restored" );
 
-done_testing;
+#done_testing;
