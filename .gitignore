@@ -1,0 +1,8 @@
+# elements managed by git/.git.msg
+# git/.git.msg configurations files
+.msg.*
+# message folders
+*_*/
+# private configuration files
+Scripts/XML-RPC/*.cfg
+!Scripts/XML-RPC/default.cfg
