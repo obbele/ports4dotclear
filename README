@@ -1,7 +1,10 @@
 Requirement:
-	perl-SAX
-	perl-SAX-Writer
-	python
+	perl-XML-Simple
+	perl-XML-SAX
+	perl-XML-SAX-Writer
+	perl-Test-Simple
+	perl-Test-Harness
+	python (>= 2.5)
 	highlight
 
 You will have to manually create configuration files in Scripts/XML-RPC.
