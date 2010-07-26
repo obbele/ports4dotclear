@@ -12,6 +12,10 @@ Externalize.pl is a basic XML SAX filter. It looks for any occurence of
 '<TAG extern="foobar"></TAG>', takes the data inside this element and
 output the result back in the XML tree.
 
+Externalize.pl is an open door to severe security flaws. It should never
+by used with an online public sytem. Fortunately, ports4dotclear runs
+locally on a (hopefully) secure box.
+
 =head1 USAGE
 
 Externalize.pl reads its input from stdin and outputs the result to

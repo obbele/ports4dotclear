@@ -1,12 +1,118 @@
-Requirement:
-	perl-XML-Simple
-	perl-XML-SAX
-	perl-XML-SAX-Writer
-	perl-Test-Simple
-	perl-Test-Harness
-	python (>= 2.5)
-	highlight
+© Copyright 2010 John Obbele. All Rights Reserved.
 
-You will have to manually create configuration files in Scripts/XML-RPC.
-See Scripts/XML-RPC/default.cfg for example.
-; vim:ft=vo_base:
+ports4dotclear
+==============
+
+ports4dotclear is a XML-RPC client to manage remotely entries on a
+DotClear2 server.
+
+It is a bundle of Makefiles, Perl and Python scripts to format markdown
+files and parsed them into well-formatted xHTML documents. The resulting
+xHTML is send to a XML-RPC enabled DotClear2 blog, managing in the same
+time related media content, such as images, videos or SVG diagrams.
+
+With ports4dotclear, you can post new blog entry, edit old ones or
+delete them. There is an archaic support for updating related media
+files, but none for managing blog comments or their categories.
+
+Installation
+============
+
+	hostname:sh $ mkdir MyDotClear2
+	hostname:sh $ cd !$
+	hostname:sh $ git clone github.com/obbele/ports4dotclear.git
+
+Requirements
+------------
+
+The present system was test on a Fedora 13 box where you only need the
+additional following packages:
+
+* perl-XML-Simple
+* perl-XML-SAX
+* perl-XML-SAX-Writer
+* perl-Test-Simple
+* perl-Test-Harness
+* python (>= 2.5)
+* highlight
+* (git, to retrieve the present software)
+
+The various scripts rely heavily on Makefiles and POSIX functionalities
+(stream redirection, pipes). I've tried to avoid linux- or bash-
+specifics functions, so you should be able to run it on any POSIX OSs,
+including w32/cygwin or \*BSD derivatives. Contact me if you run find
+any problems.
+
+Configuration
+-------------
+
+You will have to manually create a configuration file with you DotClear2
+XMl-RPC credentials in `Scripts/XML-RPC/`. See `Scripts/XML-RPC/default.cfg`
+for example.
+
+Suggested versioning system
+---------------------------
+
+ports4dotclear was created to be used with versioning systems such as
+Git. Yet, if you wish to keep track of your messages with git, it is
+recommended to separate your private data (message folders and
+`Scripts/XML-RPC/*.cfg` configuration files) from the ports4dotclear git
+repository. Otherwise, you may inadvertently loose data when pulling a
+new version of ports4dotclear or publish private data on the Internet
+(your XML-RPC credentials) when sending me a patch.
+
+One /hackish/ solution is to split your ports4dotclear folder in two git
+repositories. One in `.git` keeping track of the ports4dotclear files,
+on in `.msg.git` keeping track of your private data. See the SH script
+`init_2nd_repository.sh` for a working example.
+
+	hostname:sh $ sh ./init_2nd_repository --help
+	hostname:sh $ sh ./init_2nd_repository
+
+Usage
+=====
+
+To create a new 'foobar' message folder and publish it to DotClear on
+'myServer', simply type from the ports4dotclear root folder:
+
+	hostname:sh $ # configure XML-RPC
+	hostname:sh $ cp Scripts/XML-RPC/{default,myServer}.cfg
+	hostname:sh $ vim Scripts/XML-RPC/myServer.cfg
+
+	hostname:sh $ make new
+	Enter directory name: foobar
+	New directory created: [999_foobar]
+
+	hostname:sh $ cd 999_foobar
+
+	hostname:sh/999_foobar $ make edit
+
+	hostname:sh/999_foobar $ make view
+
+	hostname:sh/999_foobar $ make CONFIG=myServer publish
+
+Help
+====
+
+More help is available from the Makefiles with the `help` target:
+
+	hostname:sh $ make help
+
+And from the Perl and Python scripts:
+
+	hostname:sh $ perldoc Scripts/ResizeSVG.pl
+	hostname:sh $ pydoc ./Scripts/XML-RPC/dotclear.py
+
+Note that `XML-RPC/dotclear.py` is a standalone script.
+
+	hostname:sh $ ./Scripts/XML-RPC/dotclear.py --help
+
+TestSuite
+=========
+
+A simple testsuite based on Perl::Harness can be found in `Tests`. To
+run it, you should first edit the test.cfg file and provide some XML-RPC
+credentials. It is strongly recommended to perform XML-RPC tests on a
+dummy DotClear installation, not on your "official" blog.
+
+; vim:ft=markdown:textwidth=72:
