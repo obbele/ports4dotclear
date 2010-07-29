@@ -1,4 +1,4 @@
-© Copyright 2010 John Obbele. All Rights Reserved.
+© Copyright 2011 John Obbele. All Rights Reserved.
 
 ports4dotclear
 ==============
@@ -35,6 +35,8 @@ additional following packages:
 * perl-Test-Harness
 * python (>= 2.5)
 * highlight
+* xdg-utils
+* make
 * (git, to retrieve the present software)
 
 The various scripts rely heavily on Makefiles and POSIX functionalities
