@@ -1,0 +1,105 @@
+<!-- vim:spell:spelllang=en:
+Note that the article title is missing.
+It is managed directly by DotClear2.
+- - - - - - - - - - - - - - - - -
+Insert below a short introduction
+=================================
+-->
+
+This example shows a sample message written with **ports4dotclear**.
+It will present some features of the system.
+
+Its source code can be viewed [below](#source).
+
+<!-- :::::::::::::::::::::: EXCERPT SEPARATOR :::::::::::::::::::::: -->
+
+Markdown syntax
+===============
+
+By default, ports4dotclear converts a markdown text file to a
+well-formatted xHTML document. With [Markdown][0], one can easily write:
+
+- an unordered list
+- text in *italic*, either with the \* token _or_ with the \_ one.
+- text with **strong** emphasis.
+- text in teletype font, to mimic `source code`
+- [hyperlinks][1] with either a reference-like notation or directly with
+an [URL](http://en.wikipedia.org/wiki/URL)
+- ordered lists:
+	1. one
+	2. two
+	2. three
+
+You can also generate code blocks:
+
+	<div>
+		<p>Code blocks are created simply by shifting text to the right.</p>
+	</div>
+
+… or quotation blocks by beginning a paragraph with a "`>`":
+
+> Massa mus. Libero malesuada laoreet consectetuer integer. Odio. Etiam
+donec. Ornare diam. Aptent porttitor. Donec. Metus magna laoreet nec,
+rhoncus. Hac parturient at, amet. Aliquet. Blandit urna, adipiscing eni
+justo vestibulum molestie ipsum vulputate senectus id platea ad id at.
+Erat pharetra tristique id, magna. Pellentesque adipiscing pede
+imperdiet lectus, enim erat lacus.
+
+[0]: http://daringfireball.net/projects/markdown/
+[1]: http://en.wikipedia.org/wiki/Hyperlink
+
+Hierarchic headers
+------------------
+
+### can also be used ###
+
+#### and are automatically numbered ####
+
+Inline HTML and additional text processing scripts
+==================================================
+
+<p style="width:16em; padding:1em 5em; text-align:center; float: right;">
+	<object data="Media/SVG.svg" type="image/svg+xml">
+		<p>can't read SVG ? go 
+		<a href="www.getfirefox.com">www.getfirefox.com</a></p>
+	</object>
+	<br />
+	(<a href="Media/SVG.svg">SVG source</a>)
+</p>
+
+But one of the strong advantage of markdown is that you can inline HTML
+when needed. If you want to insert images or SVG diagrams, just use
+whatever HTML tag you prefer.
+
+Note that a script, `ResizeSVG.pl`, can post-process SVG diagrams to
+correctly set their dimensions. So you don't have to bother yourself
+tweaking the `<svg>` attributes `width`, `height` or `viewBox`.
+
+Another text formatting script, `Externalize.pl`, can pre-process part
+of xHTML code using external programs as, for example, highlight:
+
+<pre extern="highlight -Xfl -S C" style="width: 28em; margin: 1em 5em;">
+<![CDATA[
+#include <stdlib.h>
+#include <stdio.h>
+
+int
+main (int argc, char **argv) {
+	printf ("Hello World !\n");
+	return EXIT_SUCCESS;
+}
+]]>
+</pre>
+
+_Be aware that `<pre>` elements require sometimes a `<![CDATA[ ]]>` to
+prevent their content from being mis-interpreted by XML SAX parsers._
+
+Finally, the script `publish.pl` takes care of uploading every file in
+the *Media/* directory to your remote server when invoking `make
+CONFIG=myServer publish`.
+
+A glimpse at this page source code
+==================================
+
+<pre id="source" extern="highlight -Xfl -S HTML text.mkd">
+</pre>
